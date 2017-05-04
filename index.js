@@ -2,43 +2,12 @@
 
 class CancelError extends Error {
 	constructor() {
-		super();
+		super('Promise was canceled');
 		this.name = 'CancelError';
 	}
 }
 
 class PCancelable extends Promise {
-	constructor(executor) {
-		let _reject;
-		let _cancel;
-
-		const _state = {
-			resolved: false
-		};
-
-		super((resolve, reject) => {
-			_reject = reject;
-
-			return executor(
-				fn => {
-					_cancel = fn;
-				},
-				val => {
-					resolve(val);
-					_state.resolved = true;
-				},
-				err => {
-					reject(err);
-					_state.resolved = true;
-				}
-			);
-		});
-
-		this._reject = _reject;
-		this._cancel = _cancel;
-		this._state = _state;
-		this._canceled = false;
-	}
 	static fn(fn) {
 		return function () {
 			const args = [].slice.apply(arguments);
@@ -48,8 +17,51 @@ class PCancelable extends Promise {
 			});
 		};
 	}
+
+	constructor(executor) {
+		super(() => {});
+
+		const _state = {
+			pending: true
+		};
+
+		let _reject;
+		let _cancel;
+
+		this._promise = new Promise((resolve, reject) => {
+			_reject = reject;
+
+			return executor(
+				fn => {
+					_cancel = fn;
+				},
+				val => {
+					_state.pending = false;
+					resolve(val);
+				},
+				err => {
+					_state.pending = false;
+					reject(err);
+				}
+			);
+		});
+
+		this._state = _state;
+		this._reject = _reject;
+		this._cancel = _cancel;
+		this._canceled = false;
+	}
+
+	then() {
+		return this._promise.then.apply(this._promise, arguments);
+	}
+
+	catch() {
+		return this._promise.catch.apply(this._promise, arguments);
+	}
+
 	cancel() {
-		if (this._state.resolved || this._canceled) {
+		if (!this._state.pending || this._canceled) {
 			return;
 		}
 
@@ -64,6 +76,7 @@ class PCancelable extends Promise {
 		this._canceled = true;
 		this._reject(new CancelError());
 	}
+
 	get canceled() {
 		return this._canceled;
 	}
