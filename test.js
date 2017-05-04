@@ -135,10 +135,11 @@ test('PCancelable.CancelError', t => {
 });
 
 test.failing('resolves on cancel', async t => {
-	const p = new PCancelable((onCancel, resolve, reject) => {
+	const p = new PCancelable(onCancel => {
 		onCancel(() => {});
 	});
-	setTimeout(() => { p.cancel(); }, 100);
-	await t.throws(Promise.resolve(p));
+	setTimeout(() => {
+		p.cancel();
+	}, 100);
 	await t.throws(p);
 });
