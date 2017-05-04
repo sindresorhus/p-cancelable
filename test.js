@@ -133,3 +133,13 @@ test('PCancelable.fn()', async t => {
 test('PCancelable.CancelError', t => {
 	t.true(PCancelable.CancelError.prototype instanceof Error);
 });
+
+test.failing('resolves on cancel', async t => {
+	const p = new PCancelable(onCancel => {
+		onCancel(() => {});
+	});
+	setTimeout(() => {
+		p.cancel();
+	}, 100);
+	await t.throws(p);
+});
