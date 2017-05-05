@@ -34,7 +34,7 @@ cancelablePromise
 	})
 	.catch(reason => {
 		if (cancelablePromise.canceled) {
-			// handle the cancellation here
+			// Handle the cancelation here
 			console.log('Operation was canceled');
 			return;
 		}
@@ -42,7 +42,7 @@ cancelablePromise
 		throw reason;
 	});
 
-// cancel the operation after 10 seconds
+// Cancel the operation after 10 seconds
 setTimeout(() => {
 	cancelablePromise.cancel();
 }, 10000);
@@ -71,7 +71,7 @@ Type: `Function`
 
 Cancel the promise. The cancellation is synchronous.
 
-Calling it multiple times does nothing.
+Calling it after the promise has settled or multiple times does nothing.
 
 ### PCancelable#canceled
 
@@ -104,7 +104,7 @@ const fn = PCancelable.fn((onCancel, input) => {
 
 const promise = fn('input'); //=> PCancelable
 
-...
+// …
 
 promise.cancel();
 ```
@@ -118,7 +118,7 @@ promise.cancel();
 
 ### What about the official [Cancelable Promises proposal](https://github.com/tc39/proposal-cancelable-promises)?
 
-It's still an early draft and I don't really like its current direction. It complicates everything and will require deep changes in the ecosystem to adapt to it. And the way you have to use cancel tokens is verbose and convoluted. I much prefer the more pragmatic and less invasive approach in this module.
+~~It's still an early draft and I don't really like its current direction. It complicates everything and will require deep changes in the ecosystem to adapt to it. And the way you have to use cancel tokens is verbose and convoluted. I much prefer the more pragmatic and less invasive approach in this module.~~ The proposal was withdrawn.
 
 
 ## Related
