@@ -19,37 +19,30 @@ class PCancelable extends Promise {
 	}
 
 	constructor(executor) {
-		super(() => {});
+		super(resolve => {
+			resolve();
+		});
 
-		const _state = {
-			pending: true
-		};
-
-		let _reject;
-		let _cancel;
+		this._pending = true;
+		this._canceled = false;
 
 		this._promise = new Promise((resolve, reject) => {
-			_reject = reject;
+			this._reject = reject;
 
 			return executor(
 				fn => {
-					_cancel = fn;
+					this._cancel = fn;
 				},
 				val => {
-					_state.pending = false;
+					this._pending = false;
 					resolve(val);
 				},
 				err => {
-					_state.pending = false;
+					this._pending = false;
 					reject(err);
 				}
 			);
 		});
-
-		this._state = _state;
-		this._reject = _reject;
-		this._cancel = _cancel;
-		this._canceled = false;
 	}
 
 	then() {
@@ -61,7 +54,7 @@ class PCancelable extends Promise {
 	}
 
 	cancel() {
-		if (!this._state.pending || this._canceled) {
+		if (!this._pending || this._canceled) {
 			return;
 		}
 
