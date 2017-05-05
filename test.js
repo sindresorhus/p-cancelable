@@ -5,7 +5,7 @@ import PCancelable from '.';
 const fixture = Symbol('fixture');
 
 test('new PCancelable()', async t => {
-	t.plan(4);
+	t.plan(5);
 
 	const p = new PCancelable((onCancel, resolve) => {
 		onCancel(() => {
@@ -17,15 +17,13 @@ test('new PCancelable()', async t => {
 		}, 50);
 	});
 
+	t.true(p instanceof Promise);
+
 	t.false(p.canceled);
 
 	p.cancel();
 
-	try {
-		await p;
-	} catch (err) {
-		t.true(err instanceof PCancelable.CancelError);
-	}
+	await t.throws(p, PCancelable.CancelError);
 
 	t.true(p.canceled);
 });
@@ -79,11 +77,7 @@ test('no `onCancel` handler', async t => {
 
 	p.cancel();
 
-	try {
-		await p;
-	} catch (err) {
-		t.true(err instanceof PCancelable.CancelError);
-	}
+	await t.throws(p, PCancelable.CancelError);
 });
 
 test('does not do anything when the promise is already settled', async t => {
@@ -123,11 +117,7 @@ test('PCancelable.fn()', async t => {
 
 	p.cancel();
 
-	try {
-		await p;
-	} catch (err) {
-		t.true(err instanceof PCancelable.CancelError);
-	}
+	await t.throws(p, PCancelable.CancelError);
 });
 
 test('PCancelable.CancelError', t => {
