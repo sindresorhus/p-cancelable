@@ -1,6 +1,6 @@
 import test from 'ava';
 import delay from 'delay';
-import PCancelable from './';
+import PCancelable from '.';
 
 const fixture = Symbol('fixture');
 
@@ -134,12 +134,24 @@ test('PCancelable.CancelError', t => {
 	t.true(PCancelable.CancelError.prototype instanceof Error);
 });
 
-test.failing('resolves on cancel', async t => {
+test('rejects when canceled', async t => {
 	const p = new PCancelable(onCancel => {
 		onCancel(() => {});
 	});
+
+	p.cancel();
+
+	await t.throws(p, PCancelable.CancelError);
+});
+
+test('rejects when canceled after a delay', async t => {
+	const p = new PCancelable(onCancel => {
+		onCancel(() => {});
+	});
+
 	setTimeout(() => {
 		p.cancel();
 	}, 100);
-	await t.throws(p);
+
+	await t.throws(p, PCancelable.CancelError);
 });
