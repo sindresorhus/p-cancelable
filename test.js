@@ -5,7 +5,7 @@ import PCancelable from '.';
 const fixture = Symbol('fixture');
 
 test('new PCancelable()', async t => {
-	t.plan(4);
+	t.plan(5);
 
 	const p = new PCancelable((onCancel, resolve) => {
 		onCancel(() => {
@@ -16,6 +16,8 @@ test('new PCancelable()', async t => {
 			resolve(fixture);
 		}, 50);
 	});
+
+	t.true(p instanceof Promise);
 
 	t.false(p.canceled);
 
