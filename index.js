@@ -7,7 +7,7 @@ class CancelError extends Error {
 	}
 }
 
-class PCancelable extends Promise {
+class PCancelable {
 	static fn(fn) {
 		return function () {
 			const args = [].slice.apply(arguments);
@@ -19,10 +19,6 @@ class PCancelable extends Promise {
 	}
 
 	constructor(executor) {
-		super(resolve => {
-			resolve();
-		});
-
 		this._pending = true;
 		this._canceled = false;
 
