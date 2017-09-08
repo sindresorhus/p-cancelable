@@ -8,7 +8,7 @@ Useful for animation, loading resources, long-running async computations, async 
 ## Install
 
 ```
-$ npm install --save p-cancelable
+$ npm install p-cancelable
 ```
 
 
