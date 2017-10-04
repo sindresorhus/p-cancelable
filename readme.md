@@ -8,7 +8,7 @@ Useful for animation, loading resources, long-running async computations, async 
 ## Install
 
 ```
-$ npm install --save p-cancelable
+$ npm install p-cancelable
 ```
 
 
@@ -123,6 +123,7 @@ promise.cancel();
 
 ## Related
 
+- [p-progress](https://github.com/sindresorhus/p-progress) - Create a promise that reports progress
 - [p-lazy](https://github.com/sindresorhus/p-lazy) - Create a lazy promise that defers execution until `.then()` or `.catch()` is called
 - [More…](https://github.com/sindresorhus/promise-fun)
 
