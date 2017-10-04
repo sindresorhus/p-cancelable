@@ -8,12 +8,12 @@ class CancelError extends Error {
 }
 
 class PCancelable extends Promise {
-	static fn(fn) {
+	static fn(userFn) {
 		return function () {
 			const args = [].slice.apply(arguments);
 			return new PCancelable((onCancel, resolve, reject) => {
 				args.unshift(onCancel);
-				fn.apply(null, args).then(resolve, reject);
+				userFn.apply(null, args).then(resolve, reject);
 			});
 		};
 	}
@@ -45,12 +45,12 @@ class PCancelable extends Promise {
 		});
 	}
 
-	then() {
-		return this._promise.then.apply(this._promise, arguments);
+	then(onFulfilled, onRejected) {
+		return this._promise.then(onFulfilled, onRejected);
 	}
 
-	catch() {
-		return this._promise.catch.apply(this._promise, arguments);
+	catch(onRejected) {
+		return this._promise.catch(onRejected);
 	}
 
 	cancel() {
