@@ -85,6 +85,8 @@ Type: `Error`
 
 Rejection reason when `.cancel()` is called.
 
+It includes a `.isCanceled` property for convenience.
+
 ### PCancelable.fn(fn)
 
 Convenience method to make your promise-returning or async function cancelable.

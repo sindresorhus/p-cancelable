@@ -163,3 +163,11 @@ test('supports multiple `onCancel` handlers', async t => {
 
 	t.is(i, 3);
 });
+
+test('cancel error includes a `isCanceled` property', async t => {
+	const p = new PCancelable(() => {});
+	p.cancel();
+
+	const err = await t.throws(p);
+	t.true(err.isCanceled);
+});

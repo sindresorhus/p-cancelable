@@ -5,6 +5,10 @@ class CancelError extends Error {
 		super('Promise was canceled');
 		this.name = 'CancelError';
 	}
+
+	get isCanceled() {
+		return true;
+	}
 }
 
 class PCancelable {
