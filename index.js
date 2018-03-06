@@ -20,23 +20,23 @@ class PCancelable {
 
 	constructor(executor) {
 		this._cancelHandlers = [];
-		this._pending = true;
-		this._canceled = false;
+		this._isPending = true;
+		this._isCanceled = false;
 
 		this._promise = new Promise((resolve, reject) => {
 			this._reject = reject;
 
 			return executor(
-				fn => {
-					this._cancelHandlers.push(fn);
+				handler => {
+					this._cancelHandlers.push(handler);
 				},
-				val => {
-					this._pending = false;
-					resolve(val);
+				value => {
+					this._isPending = false;
+					resolve(value);
 				},
-				err => {
-					this._pending = false;
-					reject(err);
+				error => {
+					this._isPending = false;
+					reject(error);
 				}
 			);
 		});
@@ -51,26 +51,26 @@ class PCancelable {
 	}
 
 	cancel() {
-		if (!this._pending || this._canceled) {
+		if (!this._isPending || this._isCanceled) {
 			return;
 		}
 
 		if (this._cancelHandlers.length > 0) {
 			try {
-				for (const fn of this._cancelHandlers) {
-					fn();
+				for (const handler of this._cancelHandlers) {
+					handler();
 				}
 			} catch (err) {
 				this._reject(err);
 			}
 		}
 
-		this._canceled = true;
+		this._isCanceled = true;
 		this._reject(new CancelError());
 	}
 
 	get canceled() {
-		return this._canceled;
+		return this._isCanceled;
 	}
 }
 
