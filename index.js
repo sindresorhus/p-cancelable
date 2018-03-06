@@ -11,8 +11,8 @@ class PCancelable {
 	static fn(userFn) {
 		return function () {
 			const args = [].slice.apply(arguments);
-			return new PCancelable((onCancel, resolve, reject) => {
-				args.unshift(onCancel);
+			return new PCancelable((resolve, reject, onCancel) => {
+				args.push(onCancel);
 				userFn.apply(null, args).then(resolve, reject);
 			});
 		};
@@ -27,9 +27,6 @@ class PCancelable {
 			this._reject = reject;
 
 			return executor(
-				handler => {
-					this._cancelHandlers.push(handler);
-				},
 				value => {
 					this._isPending = false;
 					resolve(value);
@@ -37,6 +34,9 @@ class PCancelable {
 				error => {
 					this._isPending = false;
 					reject(error);
+				},
+				handler => {
+					this._cancelHandlers.push(handler);
 				}
 			);
 		});

@@ -17,7 +17,7 @@ $ npm install p-cancelable
 ```js
 const PCancelable = require('p-cancelable');
 
-const cancelablePromise = new PCancelable((onCancel, resolve, reject) => {
+const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 	const worker = new SomeLongRunningOperation();
 
 	onCancel(() => {
@@ -53,7 +53,7 @@ setTimeout(() => {
 
 ### new PCancelable(executor)
 
-Same as the [`Promise` constructor](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise), but with a prepended `onCancel` parameter in `executor`.
+Same as the [`Promise` constructor](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise), but with an appended `onCancel` parameter in `executor`.
 
 `PCancelable` is a subclass of `Promise`.
 
@@ -89,10 +89,10 @@ Rejection reason when `.cancel()` is called.
 
 Convenience method to make your promise-returning or async function cancelable.
 
-The function you specify will have `onCancel` prepended to its parameters.
+The function you specify will have `onCancel` appended to its parameters.
 
 ```js
-const fn = PCancelable.fn((onCancel, input) => {
+const fn = PCancelable.fn((input, onCancel) => {
 	const job = new Job();
 
 	onCancel(() => {

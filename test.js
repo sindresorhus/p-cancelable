@@ -7,7 +7,7 @@ const fixture = Symbol('fixture');
 test('new PCancelable()', async t => {
 	t.plan(5);
 
-	const p = new PCancelable((onCancel, resolve) => {
+	const p = new PCancelable((resolve, reject, onCancel) => {
 		onCancel(() => {
 			t.pass();
 		});
@@ -31,7 +31,7 @@ test('new PCancelable()', async t => {
 test('calling `.cancel()` multiple times', async t => {
 	t.plan(2);
 
-	const p = new PCancelable((onCancel, resolve) => {
+	const p = new PCancelable((resolve, reject, onCancel) => {
 		onCancel(() => {
 			t.pass();
 		});
@@ -53,7 +53,7 @@ test('calling `.cancel()` multiple times', async t => {
 });
 
 test('no `.cancel()` call', async t => {
-	const p = new PCancelable((onCancel, resolve) => {
+	const p = new PCancelable((resolve, reject, onCancel) => {
 		onCancel(() => {
 			t.fail();
 		});
@@ -69,7 +69,7 @@ test('no `.cancel()` call', async t => {
 test('no `onCancel` handler', async t => {
 	t.plan(1);
 
-	const p = new PCancelable((onCancel, resolve) => {
+	const p = new PCancelable(resolve => {
 		setTimeout(() => {
 			resolve(fixture);
 		}, 50);
@@ -83,7 +83,7 @@ test('no `onCancel` handler', async t => {
 test('does not do anything when the promise is already settled', async t => {
 	t.plan(2);
 
-	const p = new PCancelable((onCancel, resolve) => {
+	const p = new PCancelable((resolve, reject, onCancel) => {
 		onCancel(() => {
 			t.fail();
 		});
@@ -103,7 +103,7 @@ test('does not do anything when the promise is already settled', async t => {
 test('PCancelable.fn()', async t => {
 	t.plan(2);
 
-	const fn = PCancelable.fn(async (onCancel, input) => {
+	const fn = PCancelable.fn(async (input, onCancel) => {
 		onCancel(() => {
 			t.pass();
 		});
@@ -125,7 +125,7 @@ test('PCancelable.CancelError', t => {
 });
 
 test('rejects when canceled', async t => {
-	const p = new PCancelable(onCancel => {
+	const p = new PCancelable((resolve, reject, onCancel) => {
 		onCancel(() => {});
 	});
 
@@ -135,7 +135,7 @@ test('rejects when canceled', async t => {
 });
 
 test('rejects when canceled after a delay', async t => {
-	const p = new PCancelable(onCancel => {
+	const p = new PCancelable((resolve, reject, onCancel) => {
 		onCancel(() => {});
 	});
 
@@ -149,7 +149,7 @@ test('rejects when canceled after a delay', async t => {
 test('supports multiple `onCancel` handlers', async t => {
 	let i = 0;
 
-	const p = new PCancelable(onCancel => {
+	const p = new PCancelable((resolve, reject, onCancel) => {
 		onCancel(() => i++);
 		onCancel(() => i++);
 		onCancel(() => i++);
