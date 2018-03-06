@@ -32,14 +32,14 @@ cancelablePromise
 	.then(value => {
 		console.log('Operation finished successfully:', value);
 	})
-	.catch(reason => {
-		if (cancelablePromise.canceled) {
+	.catch(error => {
+		if (cancelablePromise.isCanceled) {
 			// Handle the cancelation here
 			console.log('Operation was canceled');
 			return;
 		}
 
-		throw reason;
+		throw error;
 	});
 
 // Cancel the operation after 10 seconds
@@ -73,7 +73,7 @@ Cancel the promise.
 
 The cancellation is synchronous. Calling it after the promise has settled or multiple times does nothing.
 
-### PCancelable#canceled
+### PCancelable#isCanceled
 
 Type: `boolean`
 

@@ -69,7 +69,7 @@ class PCancelable {
 		this._reject(new CancelError());
 	}
 
-	get canceled() {
+	get isCanceled() {
 		return this._isCanceled;
 	}
 }

@@ -19,13 +19,13 @@ test('new PCancelable()', async t => {
 
 	t.true(p instanceof Promise);
 
-	t.false(p.canceled);
+	t.false(p.isCanceled);
 
 	p.cancel();
 
 	await t.throws(p, PCancelable.CancelError);
 
-	t.true(p.canceled);
+	t.true(p.isCanceled);
 });
 
 test('calling `.cancel()` multiple times', async t => {
@@ -91,13 +91,13 @@ test('does not do anything when the promise is already settled', async t => {
 		resolve();
 	});
 
-	t.false(p.canceled);
+	t.false(p.isCanceled);
 
 	await p;
 
 	p.cancel();
 
-	t.false(p.canceled);
+	t.false(p.isCanceled);
 });
 
 test('PCancelable.fn()', async t => {
