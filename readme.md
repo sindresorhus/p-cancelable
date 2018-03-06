@@ -63,15 +63,15 @@ Type: `Function`
 
 Accepts a function that is called when the promise is canceled.
 
-You're not required to call this function.
+You're not required to call this function. You can call this function multiple times to add multiple cancel handlers.
 
 ### PCancelable#cancel()
 
 Type: `Function`
 
-Cancel the promise. The cancellation is synchronous.
+Cancel the promise.
 
-Calling it after the promise has settled or multiple times does nothing.
+The cancellation is synchronous. Calling it after the promise has settled or multiple times does nothing.
 
 ### PCancelable#canceled
 

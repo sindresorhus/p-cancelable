@@ -19,6 +19,7 @@ class PCancelable {
 	}
 
 	constructor(executor) {
+		this._cancelHandlers = [];
 		this._pending = true;
 		this._canceled = false;
 
@@ -27,7 +28,7 @@ class PCancelable {
 
 			return executor(
 				fn => {
-					this._cancel = fn;
+					this._cancelHandlers.push(fn);
 				},
 				val => {
 					this._pending = false;
@@ -54,9 +55,11 @@ class PCancelable {
 			return;
 		}
 
-		if (typeof this._cancel === 'function') {
+		if (this._cancelHandlers.length > 0) {
 			try {
-				this._cancel();
+				for (const fn of this._cancelHandlers) {
+					fn();
+				}
 			} catch (err) {
 				this._reject(err);
 			}

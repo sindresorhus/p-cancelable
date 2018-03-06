@@ -145,3 +145,21 @@ test('rejects when canceled after a delay', async t => {
 
 	await t.throws(p, PCancelable.CancelError);
 });
+
+test('supports multiple `onCancel` handlers', async t => {
+	let i = 0;
+
+	const p = new PCancelable(onCancel => {
+		onCancel(() => i++);
+		onCancel(() => i++);
+		onCancel(() => i++);
+	});
+
+	p.cancel();
+
+	try {
+		await p;
+	} catch (_) {}
+
+	t.is(i, 3);
+});
