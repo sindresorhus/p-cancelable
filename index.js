@@ -54,6 +54,10 @@ class PCancelable {
 		return this._promise.catch(onRejected);
 	}
 
+	finally(onFinally) {
+		return this._promise.finally(onFinally);
+	}
+
 	cancel() {
 		if (!this._isPending || this._isCanceled) {
 			return;
