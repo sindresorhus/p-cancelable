@@ -1,6 +1,9 @@
 import test from 'ava';
 import delay from 'delay';
+import promiseFinally from 'promise.prototype.finally';
 import PCancelable from '.';
+
+promiseFinally.shim();
 
 const fixture = Symbol('fixture');
 
@@ -170,4 +173,14 @@ test('cancel error includes a `isCanceled` property', async t => {
 
 	const err = await t.throws(p);
 	t.true(err.isCanceled);
+});
+
+test.cb('supports `finally`', t => {
+	const p = new PCancelable(resolve => {
+		setTimeout(resolve, 1);
+	});
+
+	p.finally(() => {
+		t.end();
+	});
 });
