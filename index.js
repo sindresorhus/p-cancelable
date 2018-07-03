@@ -1,8 +1,8 @@
 'use strict';
 
 class CancelError extends Error {
-	constructor() {
-		super('Promise was canceled');
+	constructor(reason = '') {
+		super('Promise was canceled. Reason: ' + reason);
 		this.name = 'CancelError';
 	}
 
@@ -58,7 +58,7 @@ class PCancelable {
 		return this._promise.finally(onFinally);
 	}
 
-	cancel() {
+	cancel(reason) {
 		if (!this._isPending || this._isCanceled) {
 			return;
 		}
@@ -74,7 +74,7 @@ class PCancelable {
 		}
 
 		this._isCanceled = true;
-		this._reject(new CancelError());
+		this._reject(new CancelError(reason));
 	}
 
 	get isCanceled() {
