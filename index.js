@@ -14,10 +14,10 @@ class CancelError extends Error {
 class PCancelable {
 	static fn(userFn) {
 		return function () {
-			const args = [].slice.apply(arguments);
+			const args = [].slice.apply(arguments); // eslint-disable-line prefer-rest-params
 			return new PCancelable((resolve, reject, onCancel) => {
 				args.push(onCancel);
-				userFn.apply(null, args).then(resolve, reject);
+				userFn.apply(null, args).then(resolve, reject); // eslint-disable-line prefer-spread
 			});
 		};
 	}
