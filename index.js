@@ -1,8 +1,8 @@
 'use strict';
 
 class CancelError extends Error {
-	constructor(reason = '') {
-		super('Promise was canceled. Reason: ' + reason);
+	constructor(reason) {
+		super(reason || 'Promise was canceled.');
 		this.name = 'CancelError';
 	}
 
