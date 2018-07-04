@@ -1,8 +1,8 @@
 'use strict';
 
 class CancelError extends Error {
-	constructor() {
-		super('Promise was canceled');
+	constructor(reason) {
+		super(reason || 'Promise was canceled');
 		this.name = 'CancelError';
 	}
 
@@ -14,10 +14,10 @@ class CancelError extends Error {
 class PCancelable {
 	static fn(userFn) {
 		return function () {
-			const args = [].slice.apply(arguments);
+			const args = [].slice.apply(arguments); // eslint-disable-line prefer-rest-params
 			return new PCancelable((resolve, reject, onCancel) => {
 				args.push(onCancel);
-				userFn.apply(null, args).then(resolve, reject);
+				userFn.apply(null, args).then(resolve, reject); // eslint-disable-line prefer-spread
 			});
 		};
 	}
@@ -58,7 +58,7 @@ class PCancelable {
 		return this._promise.finally(onFinally);
 	}
 
-	cancel() {
+	cancel(reason) {
 		if (!this._isPending || this._isCanceled) {
 			return;
 		}
@@ -74,7 +74,7 @@ class PCancelable {
 		}
 
 		this._isCanceled = true;
-		this._reject(new CancelError());
+		this._reject(new CancelError(reason));
 	}
 
 	get isCanceled() {

@@ -44,7 +44,7 @@ cancelablePromise
 
 // Cancel the operation after 10 seconds
 setTimeout(() => {
-	cancelablePromise.cancel();
+	cancelablePromise.cancel('Unicorn has changed its color');
 }, 10000);
 ```
 
@@ -65,11 +65,11 @@ Accepts a function that is called when the promise is canceled.
 
 You're not required to call this function. You can call this function multiple times to add multiple cancel handlers.
 
-### PCancelable#cancel()
+### PCancelable#cancel([reason])
 
 Type: `Function`
 
-Cancel the promise.
+Cancel the promise and optionally provide a reason.
 
 The cancellation is synchronous. Calling it after the promise has settled or multiple times does nothing.
 

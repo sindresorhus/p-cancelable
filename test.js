@@ -184,3 +184,19 @@ test.cb('supports `finally`', t => {
 		t.end();
 	});
 });
+
+test('default message with no reason', async t => {
+	const p = new PCancelable(() => {});
+	p.cancel();
+
+	const err = await t.throws(p);
+	t.is(err.message, 'Promise was canceled');
+});
+
+test('custom reason', async t => {
+	const p = new PCancelable(() => {});
+	p.cancel('unicorn');
+
+	const err = await t.throws(p);
+	t.is(err.message, 'unicorn');
+});
