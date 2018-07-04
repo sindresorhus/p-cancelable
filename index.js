@@ -2,7 +2,7 @@
 
 class CancelError extends Error {
 	constructor(reason) {
-		super(reason || 'Promise was canceled.');
+		super(reason || 'Promise was canceled');
 		this.name = 'CancelError';
 	}
 
