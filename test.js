@@ -176,8 +176,9 @@ test('cancel error includes a `isCanceled` property', async t => {
 });
 
 test.cb('supports `finally`', t => {
-	const p = new PCancelable(resolve => {
-		setTimeout(resolve, 1);
+	const p = new PCancelable(async resolve => {
+		await delay(1);
+		resolve();
 	});
 
 	p.finally(() => {

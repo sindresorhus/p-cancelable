@@ -13,11 +13,10 @@ class CancelError extends Error {
 
 class PCancelable {
 	static fn(userFn) {
-		return function () {
-			const args = [].slice.apply(arguments); // eslint-disable-line prefer-rest-params
+		return (...args) => {
 			return new PCancelable((resolve, reject, onCancel) => {
 				args.push(onCancel);
-				userFn.apply(null, args).then(resolve, reject); // eslint-disable-line prefer-spread
+				userFn(...args).then(resolve, reject);
 			});
 		};
 	}
@@ -68,8 +67,8 @@ class PCancelable {
 				for (const handler of this._cancelHandlers) {
 					handler();
 				}
-			} catch (err) {
-				this._reject(err);
+			} catch (error) {
+				this._reject(error);
 			}
 		}
 

@@ -28,11 +28,10 @@ const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 	worker.on('error', reject);
 });
 
-cancelablePromise
-	.then(value => {
-		console.log('Operation finished successfully:', value);
-	})
-	.catch(error => {
+(async () => {
+	try {
+		console.log('Operation finished successfully:', await cancelablePromise);
+	} catch (error) {
 		if (cancelablePromise.isCanceled) {
 			// Handle the cancelation here
 			console.log('Operation was canceled');
@@ -40,7 +39,8 @@ cancelablePromise
 		}
 
 		throw error;
-	});
+	}
+})();
 
 // Cancel the operation after 10 seconds
 setTimeout(() => {
