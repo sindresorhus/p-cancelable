@@ -38,8 +38,12 @@ class PCancelable {
 					this._isPending = false;
 					reject(error);
 				},
-				handler => {
-					this._cancelHandlers.push(handler);
+				handlerOrReason => {
+					if (typeof handlerOrReason === 'function') {
+						this._cancelHandlers.push(handlerOrReason);
+					} else {
+						this.cancel(handlerOrReason);
+					}
 				}
 			);
 		});

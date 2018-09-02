@@ -83,6 +83,16 @@ test('no `onCancel` handler', async t => {
 	await t.throws(p, PCancelable.CancelError);
 });
 
+test('calling `onCancel(reason)` cancels the promise`', async t => {
+	t.plan(1);
+
+	const p = new PCancelable((resolve, reject, onCancel) => {
+		onCancel();
+	});
+
+	await t.throws(p, PCancelable.CancelError);
+});
+
 test('does not do anything when the promise is already settled', async t => {
 	t.plan(2);
 
