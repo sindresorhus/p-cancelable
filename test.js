@@ -83,7 +83,7 @@ test('no `onCancel` handler', async t => {
 	await t.throws(p, PCancelable.CancelError);
 });
 
-test('calling `onCancel(reason)` cancels the promise`', async t => {
+test('calling `onCancel(reason)` cancels the promise', async t => {
 	t.plan(1);
 
 	const p = new PCancelable((resolve, reject, onCancel) => {
