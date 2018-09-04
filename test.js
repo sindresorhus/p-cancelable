@@ -49,9 +49,9 @@ test('calling `.cancel()` multiple times', async t => {
 
 	try {
 		await p;
-	} catch (err) {
+	} catch (error) {
 		p.cancel();
-		t.true(err instanceof PCancelable.CancelError);
+		t.true(error instanceof PCancelable.CancelError);
 	}
 });
 
