@@ -190,14 +190,57 @@ test('default message with no reason', async t => {
 	const p = new PCancelable(() => {});
 	p.cancel();
 
-	const err = await t.throws(p);
-	t.is(err.message, 'Promise was canceled');
+	await t.throws(p, 'Promise was canceled');
 });
 
 test('custom reason', async t => {
 	const p = new PCancelable(() => {});
 	p.cancel('unicorn');
 
-	const err = await t.throws(p);
-	t.is(err.message, 'unicorn');
+	await t.throws(p, 'unicorn');
+});
+
+test('detach rejection', async t => {
+	const p = new PCancelable((resolve, reject, onCancel) => {
+		onCancel.shouldReject = false;
+		setTimeout(resolve, 100);
+	});
+
+	p.cancel();
+	await t.notThrows(p);
+});
+
+test('detach rejection and reject later', async t => {
+	const p = new PCancelable((resolve, reject, onCancel) => {
+		onCancel.shouldReject = false;
+		setTimeout(() => reject(new Error('unicorn')), 100);
+	});
+
+	p.cancel();
+	await t.throws(p, 'unicorn');
+});
+
+test('detach rejection and resolve later', async t => {
+	const p = new PCancelable((resolve, reject, onCancel) => {
+		onCancel.shouldReject = false;
+		setTimeout(() => resolve('unicorn'), 100);
+	});
+
+	t.is(await p, 'unicorn');
+});
+
+test('`onCancel.shouldReject` is true by default', async t => {
+	await t.notThrows(() => new PCancelable((resolve, reject, onCancel) => {
+		t.true(onCancel.shouldReject);
+	}));
+});
+
+test('throws on cancel when `onCancel.shouldReject` is true', async t => {
+	const p = new PCancelable((resolve, reject, onCancel) => {
+		onCancel.shouldReject = false;
+		onCancel.shouldReject = true;
+	});
+	p.cancel();
+
+	await t.throws(p);
 });

@@ -53,7 +53,23 @@ setTimeout(() => {
 
 ### new PCancelable(executor)
 
-Same as the [`Promise` constructor](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise), but with an appended `onCancel` parameter in `executor`.
+Same as the [`Promise` constructor](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise), but with an appended `onCancel` parameter in `executor`.<br>
+Cancelling will reject the promise with `PCancelable.CancelError`. To avoid that, set `onCancel.shouldReject` to `false`.
+
+```js
+const cancelable = new PCancelable((resolve, reject, onCancel) => {
+	const job = new Job();
+
+	onCancel.shouldReject = false;
+	onCancel(() => {
+		job.stop();
+	});
+
+	job.on('finish', resolve);
+});
+
+promise.cancel(); // Doesn't throw an error
+```
 
 `PCancelable` is a subclass of `Promise`.
 
