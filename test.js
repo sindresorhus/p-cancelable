@@ -200,7 +200,7 @@ test('custom reason', async t => {
 	await t.throws(p, 'unicorn');
 });
 
-test('detach rejection', async t => {
+test('prevent rejection', async t => {
 	const p = new PCancelable((resolve, reject, onCancel) => {
 		onCancel.shouldReject = false;
 		setTimeout(resolve, 100);
@@ -210,7 +210,7 @@ test('detach rejection', async t => {
 	await t.notThrows(p);
 });
 
-test('detach rejection and reject later', async t => {
+test('prevent rejection and reject later', async t => {
 	const p = new PCancelable((resolve, reject, onCancel) => {
 		onCancel.shouldReject = false;
 		setTimeout(() => reject(new Error('unicorn')), 100);
@@ -220,7 +220,7 @@ test('detach rejection and reject later', async t => {
 	await t.throws(p, 'unicorn');
 });
 
-test('detach rejection and resolve later', async t => {
+test('prevent rejection and resolve later', async t => {
 	const p = new PCancelable((resolve, reject, onCancel) => {
 		onCancel.shouldReject = false;
 		setTimeout(() => resolve('unicorn'), 100);
