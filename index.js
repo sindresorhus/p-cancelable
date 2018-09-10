@@ -25,23 +25,35 @@ class PCancelable {
 		this._cancelHandlers = [];
 		this._isPending = true;
 		this._isCanceled = false;
+		this._rejectOnCancel = true;
 
 		this._promise = new Promise((resolve, reject) => {
 			this._reject = reject;
 
-			return executor(
-				value => {
-					this._isPending = false;
-					resolve(value);
-				},
-				error => {
-					this._isPending = false;
-					reject(error);
-				},
-				handler => {
-					this._cancelHandlers.push(handler);
+			const onResolve = value => {
+				this._isPending = false;
+				resolve(value);
+			};
+
+			const onReject = error => {
+				this._isPending = false;
+				reject(error);
+			};
+
+			const onCancel = handler => {
+				this._cancelHandlers.push(handler);
+			};
+
+			Object.defineProperties(onCancel, {
+				shouldReject: {
+					get: () => this._rejectOnCancel,
+					set: bool => {
+						this._rejectOnCancel = bool;
+					}
 				}
-			);
+			});
+
+			return executor(onResolve, onReject, onCancel);
 		});
 	}
 
@@ -73,7 +85,9 @@ class PCancelable {
 		}
 
 		this._isCanceled = true;
-		this._reject(new CancelError(reason));
+		if (this._rejectOnCancel) {
+			this._reject(new CancelError(reason));
+		}
 	}
 
 	get isCanceled() {
