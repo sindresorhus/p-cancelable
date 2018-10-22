@@ -57,7 +57,9 @@ Same as the [`Promise` constructor](https://developer.mozilla.org/en/docs/Web/Ja
 Cancelling will reject the promise with `PCancelable.CancelError`. To avoid that, set `onCancel.shouldReject` to `false`.
 
 ```js
-const cancelable = new PCancelable((resolve, reject, onCancel) => {
+const PCancelable = require('p-cancelable');
+
+const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 	const job = new Job();
 
 	onCancel.shouldReject = false;
@@ -68,7 +70,7 @@ const cancelable = new PCancelable((resolve, reject, onCancel) => {
 	job.on('finish', resolve);
 });
 
-promise.cancel(); // Doesn't throw an error
+cancelablePromise.cancel(); // Doesn't throw an error
 ```
 
 `PCancelable` is a subclass of `Promise`.
@@ -110,6 +112,8 @@ Convenience method to make your promise-returning or async function cancelable.
 The function you specify will have `onCancel` appended to its parameters.
 
 ```js
+const PCancelable = require('p-cancelable');
+
 const fn = PCancelable.fn((input, onCancel) => {
 	const job = new Job();
 
@@ -120,11 +124,11 @@ const fn = PCancelable.fn((input, onCancel) => {
 	return job.start(); //=> Promise
 });
 
-const promise = fn('input'); //=> PCancelable
+const cancelablePromise = fn('input'); //=> PCancelable
 
 // …
 
-promise.cancel();
+cancelablePromise.cancel();
 ```
 
 
