@@ -10,7 +10,7 @@ const fixture = Symbol('fixture');
 test('new PCancelable()', async t => {
 	t.plan(5);
 
-	const p = new PCancelable((resolve, reject, onCancel) => {
+	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 		onCancel(() => {
 			t.pass();
 		});
@@ -20,21 +20,21 @@ test('new PCancelable()', async t => {
 		}, 50);
 	});
 
-	t.true(p instanceof Promise);
+	t.true(cancelablePromise instanceof Promise);
 
-	t.false(p.isCanceled);
+	t.false(cancelablePromise.isCanceled);
 
-	p.cancel();
+	cancelablePromise.cancel();
 
-	await t.throws(p, PCancelable.CancelError);
+	await t.throwsAsync(cancelablePromise, PCancelable.CancelError);
 
-	t.true(p.isCanceled);
+	t.true(cancelablePromise.isCanceled);
 });
 
 test('calling `.cancel()` multiple times', async t => {
 	t.plan(2);
 
-	const p = new PCancelable((resolve, reject, onCancel) => {
+	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 		onCancel(() => {
 			t.pass();
 		});
@@ -44,19 +44,19 @@ test('calling `.cancel()` multiple times', async t => {
 		}, 50);
 	});
 
-	p.cancel();
-	p.cancel();
+	cancelablePromise.cancel();
+	cancelablePromise.cancel();
 
 	try {
-		await p;
+		await cancelablePromise;
 	} catch (error) {
-		p.cancel();
+		cancelablePromise.cancel();
 		t.true(error instanceof PCancelable.CancelError);
 	}
 });
 
 test('no `.cancel()` call', async t => {
-	const p = new PCancelable((resolve, reject, onCancel) => {
+	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 		onCancel(() => {
 			t.fail();
 		});
@@ -66,27 +66,27 @@ test('no `.cancel()` call', async t => {
 		}, 50);
 	});
 
-	t.is(await p, fixture);
+	t.is(await cancelablePromise, fixture);
 });
 
 test('no `onCancel` handler', async t => {
 	t.plan(1);
 
-	const p = new PCancelable(resolve => {
+	const cancelablePromise = new PCancelable(resolve => {
 		setTimeout(() => {
 			resolve(fixture);
 		}, 50);
 	});
 
-	p.cancel();
+	cancelablePromise.cancel();
 
-	await t.throws(p, PCancelable.CancelError);
+	await t.throwsAsync(cancelablePromise, PCancelable.CancelError);
 });
 
 test('does not do anything when the promise is already settled', async t => {
 	t.plan(2);
 
-	const p = new PCancelable((resolve, reject, onCancel) => {
+	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 		onCancel(() => {
 			t.fail();
 		});
@@ -94,19 +94,19 @@ test('does not do anything when the promise is already settled', async t => {
 		resolve();
 	});
 
-	t.false(p.isCanceled);
+	t.false(cancelablePromise.isCanceled);
 
-	await p;
+	await cancelablePromise;
 
-	p.cancel();
+	cancelablePromise.cancel();
 
-	t.false(p.isCanceled);
+	t.false(cancelablePromise.isCanceled);
 });
 
 test('PCancelable.fn()', async t => {
 	t.plan(2);
 
-	const fn = PCancelable.fn(async (input, onCancel) => {
+	const cancelableFunction = PCancelable.fn(async (input, onCancel) => {
 		onCancel(() => {
 			t.pass();
 		});
@@ -116,11 +116,11 @@ test('PCancelable.fn()', async t => {
 		return input;
 	});
 
-	const p = fn(fixture);
+	const cancelablePromise = cancelableFunction(fixture);
 
-	p.cancel();
+	cancelablePromise.cancel();
 
-	await t.throws(p, PCancelable.CancelError);
+	await t.throwsAsync(cancelablePromise, PCancelable.CancelError);
 });
 
 test('PCancelable.CancelError', t => {
@@ -128,105 +128,105 @@ test('PCancelable.CancelError', t => {
 });
 
 test('rejects when canceled', async t => {
-	const p = new PCancelable((resolve, reject, onCancel) => {
+	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 		onCancel(() => {});
 	});
 
-	p.cancel();
+	cancelablePromise.cancel();
 
-	await t.throws(p, PCancelable.CancelError);
+	await t.throwsAsync(cancelablePromise, PCancelable.CancelError);
 });
 
 test('rejects when canceled after a delay', async t => {
-	const p = new PCancelable((resolve, reject, onCancel) => {
+	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 		onCancel(() => {});
 	});
 
 	setTimeout(() => {
-		p.cancel();
+		cancelablePromise.cancel();
 	}, 100);
 
-	await t.throws(p, PCancelable.CancelError);
+	await t.throwsAsync(cancelablePromise, PCancelable.CancelError);
 });
 
 test('supports multiple `onCancel` handlers', async t => {
 	let i = 0;
 
-	const p = new PCancelable((resolve, reject, onCancel) => {
+	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 		onCancel(() => i++);
 		onCancel(() => i++);
 		onCancel(() => i++);
 	});
 
-	p.cancel();
+	cancelablePromise.cancel();
 
 	try {
-		await p;
+		await cancelablePromise;
 	} catch (_) {}
 
 	t.is(i, 3);
 });
 
 test('cancel error includes a `isCanceled` property', async t => {
-	const p = new PCancelable(() => {});
-	p.cancel();
+	const cancelablePromise = new PCancelable(() => {});
+	cancelablePromise.cancel();
 
-	const err = await t.throws(p);
+	const err = await t.throwsAsync(cancelablePromise);
 	t.true(err.isCanceled);
 });
 
 test.cb('supports `finally`', t => {
-	const p = new PCancelable(async resolve => {
+	const cancelablePromise = new PCancelable(async resolve => {
 		await delay(1);
 		resolve();
 	});
 
-	p.finally(() => {
+	cancelablePromise.finally(() => {
 		t.end();
 	});
 });
 
 test('default message with no reason', async t => {
-	const p = new PCancelable(() => {});
-	p.cancel();
+	const cancelablePromise = new PCancelable(() => {});
+	cancelablePromise.cancel();
 
-	await t.throws(p, 'Promise was canceled');
+	await t.throwsAsync(cancelablePromise, 'Promise was canceled');
 });
 
 test('custom reason', async t => {
-	const p = new PCancelable(() => {});
-	p.cancel('unicorn');
+	const cancelablePromise = new PCancelable(() => {});
+	cancelablePromise.cancel('unicorn');
 
-	await t.throws(p, 'unicorn');
+	await t.throwsAsync(cancelablePromise, 'unicorn');
 });
 
 test('prevent rejection', async t => {
-	const p = new PCancelable((resolve, reject, onCancel) => {
+	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 		onCancel.shouldReject = false;
 		setTimeout(resolve, 100);
 	});
 
-	p.cancel();
-	await t.notThrows(p);
+	cancelablePromise.cancel();
+	await t.notThrowsAsync(cancelablePromise);
 });
 
 test('prevent rejection and reject later', async t => {
-	const p = new PCancelable((resolve, reject, onCancel) => {
+	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 		onCancel.shouldReject = false;
 		setTimeout(() => reject(new Error('unicorn')), 100);
 	});
 
-	p.cancel();
-	await t.throws(p, 'unicorn');
+	cancelablePromise.cancel();
+	await t.throwsAsync(cancelablePromise, 'unicorn');
 });
 
 test('prevent rejection and resolve later', async t => {
-	const p = new PCancelable((resolve, reject, onCancel) => {
+	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 		onCancel.shouldReject = false;
 		setTimeout(() => resolve('unicorn'), 100);
 	});
 
-	t.is(await p, 'unicorn');
+	t.is(await cancelablePromise, 'unicorn');
 });
 
 test('`onCancel.shouldReject` is true by default', async t => {
@@ -236,11 +236,11 @@ test('`onCancel.shouldReject` is true by default', async t => {
 });
 
 test('throws on cancel when `onCancel.shouldReject` is true', async t => {
-	const p = new PCancelable((resolve, reject, onCancel) => {
+	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 		onCancel.shouldReject = false;
 		onCancel.shouldReject = true;
 	});
-	p.cancel();
+	cancelablePromise.cancel();
 
-	await t.throws(p);
+	await t.throwsAsync(cancelablePromise);
 });
