@@ -42,8 +42,9 @@ class PCancelable {
 
 			const onCancel = handler => {
 				if (!this._isPending) {
-					throw Error('onCancel handler was attached after the promise settled.')
+					throw new Error('onCancel handler was attached after the promise settled.');
 				}
+
 				this._cancelHandlers.push(handler);
 			};
 
