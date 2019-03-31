@@ -13,10 +13,11 @@ class CancelError extends Error {
 
 class PCancelable {
 	static fn(userFn) {
-		return (...args) => {
+		return (...arguments_) => {
 			return new PCancelable((resolve, reject, onCancel) => {
-				args.push(onCancel);
-				userFn(...args).then(resolve, reject);
+				arguments_.push(onCancel);
+				// eslint-disable-next-line promise/prefer-await-to-then
+				userFn(...arguments_).then(resolve, reject);
 			});
 		};
 	}
@@ -51,8 +52,8 @@ class PCancelable {
 			Object.defineProperties(onCancel, {
 				shouldReject: {
 					get: () => this._rejectOnCancel,
-					set: bool => {
-						this._rejectOnCancel = bool;
+					set: boolean => {
+						this._rejectOnCancel = boolean;
 					}
 				}
 			});
@@ -62,6 +63,7 @@ class PCancelable {
 	}
 
 	then(onFulfilled, onRejected) {
+		// eslint-disable-next-line promise/prefer-await-to-then
 		return this._promise.then(onFulfilled, onRejected);
 	}
 

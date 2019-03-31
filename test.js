@@ -3,6 +3,7 @@ import delay from 'delay';
 import promiseFinally from 'promise.prototype.finally';
 import PCancelable from '.';
 
+// TODO: Remove this when targeting Node.js 10
 promiseFinally.shim();
 
 const fixture = Symbol('fixture');
