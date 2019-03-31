@@ -1,5 +1,6 @@
-import {expectType} from 'tsd-check';
-import PCancelable, {OnCancelFunction, CancelError} from '.';
+import {expectType} from 'tsd';
+import PCancelable = require('.');
+import {OnCancelFunction, CancelError} from '.';
 
 const cancelablePromise: PCancelable<number> = new PCancelable(
 	(resolve, reject, onCancel) => {
@@ -102,5 +103,6 @@ expectType<
 const cancelError = new CancelError();
 new CancelError('foo');
 
+expectType<CancelError>(cancelError);
 expectType<'CancelError'>(cancelError.name);
 expectType<true>(cancelError.isCanceled);
