@@ -102,6 +102,4 @@ class PCancelable {
 Object.setPrototypeOf(PCancelable.prototype, Promise.prototype);
 
 module.exports = PCancelable;
-module.exports.default = PCancelable;
-
 module.exports.CancelError = CancelError;
