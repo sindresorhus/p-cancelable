@@ -83,7 +83,7 @@ Accepts a function that is called when the promise is canceled.
 
 You're not required to call this function. You can call this function multiple times to add multiple cancel handlers.
 
-### PCancelable#cancel([reason])
+### PCancelable#cancel(reason?)
 
 Type: `Function`
 
@@ -150,6 +150,14 @@ cancelablePromise.cancel();
 - [More…](https://github.com/sindresorhus/promise-fun)
 
 
-## License
+---
 
-MIT © [Sindre Sorhus](https://sindresorhus.com)
+<div align="center">
+	<b>
+		<a href="https://tidelift.com/subscription/pkg/npm-p-cancelable?utm_source=npm-p-cancelable&utm_medium=referral&utm_campaign=readme">Get professional support for this package with a Tidelift subscription</a>
+	</b>
+	<br>
+	<sub>
+		Tidelift helps make open source sustainable for maintainers while giving companies<br>assurances about security, maintenance, and licensing for their dependencies.
+	</sub>
+</div>
