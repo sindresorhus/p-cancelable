@@ -143,21 +143,15 @@ cancelablePromise.cancel();
 ~~It's still an early draft and I don't really like its current direction. It complicates everything and will require deep changes in the ecosystem to adapt to it. And the way you have to use cancel tokens is verbose and convoluted. I much prefer the more pragmatic and less invasive approach in this module.~~ The proposal was withdrawn.
 
 
+## p-cancelable for enterprise
+
+Available as part of the Tidelift Subscription.
+
+The maintainers of p-cancelable and thousands of other packages are working with Tidelift to deliver commercial support and maintenance for the open source dependencies you use to build your applications. Save time, reduce risk, and improve code health, while paying the maintainers of the exact dependencies you use. [Learn more.](https://tidelift.com/subscription/pkg/npm-p-cancelable?utm_source=npm-p-cancelable&utm_medium=referral&utm_campaign=enterprise&utm_term=repo)
+
+
 ## Related
 
 - [p-progress](https://github.com/sindresorhus/p-progress) - Create a promise that reports progress
 - [p-lazy](https://github.com/sindresorhus/p-lazy) - Create a lazy promise that defers execution until `.then()` or `.catch()` is called
 - [More…](https://github.com/sindresorhus/promise-fun)
-
-
----
-
-<div align="center">
-	<b>
-		<a href="https://tidelift.com/subscription/pkg/npm-p-cancelable?utm_source=npm-p-cancelable&utm_medium=referral&utm_campaign=readme">Get professional support for this package with a Tidelift subscription</a>
-	</b>
-	<br>
-	<sub>
-		Tidelift helps make open source sustainable for maintainers while giving companies<br>assurances about security, maintenance, and licensing for their dependencies.
-	</sub>
-</div>
