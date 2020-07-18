@@ -80,6 +80,8 @@ class PCancelable {
 			return;
 		}
 
+		this._isCanceled = true;
+
 		if (this._cancelHandlers.length > 0) {
 			try {
 				for (const handler of this._cancelHandlers) {
@@ -87,10 +89,10 @@ class PCancelable {
 				}
 			} catch (error) {
 				this._reject(error);
+				return;
 			}
 		}
 
-		this._isCanceled = true;
 		if (this._rejectOnCancel) {
 			this._reject(new CancelError(reason));
 		}
