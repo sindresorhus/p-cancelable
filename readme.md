@@ -4,6 +4,8 @@
 
 Useful for animation, loading resources, long-running async computations, async iteration, etc.
 
+*If you target [Node.js 15](https://medium.com/@nodejs/node-js-v15-0-0-is-here-deb00750f278) or later, this package is less useful and you should probably use [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) instead.*
+
 
 ## Install
 
