@@ -1,4 +1,4 @@
-# p-cancelable [![Build Status](https://travis-ci.org/sindresorhus/p-cancelable.svg?branch=master)](https://travis-ci.org/sindresorhus/p-cancelable)
+# p-cancelable
 
 > Create a promise that can be canceled
 
