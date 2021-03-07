@@ -4,15 +4,13 @@
 
 Useful for animation, loading resources, long-running async computations, async iteration, etc.
 
-*If you target [Node.js 15](https://medium.com/@nodejs/node-js-v15-0-0-is-here-deb00750f278) or later, this package is less useful and you should probably use [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) instead.*
-
+*If you target [Node.js 15](https://medium.com/@nodejs/node-js-v15-0-0-is-here-deb00750f278) or later, this package is [less useful](https://github.com/sindresorhus/p-cancelable/issues/27) and you should probably use [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) instead.*
 
 ## Install
 
 ```
 $ npm install p-cancelable
 ```
-
 
 ## Usage
 
@@ -49,7 +47,6 @@ setTimeout(() => {
 	cancelablePromise.cancel('Unicorn has changed its color');
 }, 10000);
 ```
-
 
 ## API
 
@@ -133,7 +130,6 @@ const cancelablePromise = fn('input'); //=> PCancelable
 cancelablePromise.cancel();
 ```
 
-
 ## FAQ
 
 ### Cancelable vs. Cancellable
@@ -144,13 +140,11 @@ cancelablePromise.cancel();
 
 ~~It's still an early draft and I don't really like its current direction. It complicates everything and will require deep changes in the ecosystem to adapt to it. And the way you have to use cancel tokens is verbose and convoluted. I much prefer the more pragmatic and less invasive approach in this module.~~ The proposal was withdrawn.
 
-
 ## p-cancelable for enterprise
 
 Available as part of the Tidelift Subscription.
 
 The maintainers of p-cancelable and thousands of other packages are working with Tidelift to deliver commercial support and maintenance for the open source dependencies you use to build your applications. Save time, reduce risk, and improve code health, while paying the maintainers of the exact dependencies you use. [Learn more.](https://tidelift.com/subscription/pkg/npm-p-cancelable?utm_source=npm-p-cancelable&utm_medium=referral&utm_campaign=enterprise&utm_term=repo)
-
 
 ## Related
 
