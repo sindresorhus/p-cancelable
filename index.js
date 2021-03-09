@@ -32,7 +32,7 @@ class PCancelable {
 			this._reject = reject;
 
 			const onResolve = value => {
-				if (this._isCanceled !== true || onCancel.shouldReject === false) {
+				if (!this._isCanceled || !onCancel.shouldReject) {
 					this._isPending = false;
 					resolve(value);
 				}
@@ -48,12 +48,7 @@ class PCancelable {
 					throw new Error('The `onCancel` handler was attached after the promise settled.');
 				}
 
-				const fn = (...args) => {
-					this._isCanceled = true;
-					handler(...args);
-				};
-
-				this._cancelHandlers.push(fn);
+				this._cancelHandlers.push(handler);
 			};
 
 			Object.defineProperties(onCancel, {
