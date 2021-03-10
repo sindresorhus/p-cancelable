@@ -245,3 +245,23 @@ test('throws on cancel when `onCancel.shouldReject` is true', async t => {
 
 	await t.throwsAsync(cancelablePromise);
 });
+
+test('throws immediately as soon as .cancel() is called', async t => {
+	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
+		const timeout = setTimeout(() => {
+			resolve(true);
+		}, 10);
+
+		onCancel.shouldReject = true;
+		onCancel(() => {
+			clearTimeout(timeout);
+			resolve(false);
+		});
+	});
+
+	cancelablePromise.cancel();
+
+	await t.throwsAsync(cancelablePromise, {
+		message: 'Promise was canceled'
+	});
+});
