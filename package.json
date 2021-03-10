@@ -1,6 +1,6 @@
 {
 	"name": "p-cancelable",
-	"version": "2.0.0",
+	"version": "2.1.0",
 	"description": "Create a promise that can be canceled",
 	"license": "MIT",
 	"repository": "sindresorhus/p-cancelable",
