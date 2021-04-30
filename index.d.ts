@@ -163,7 +163,7 @@ declare class PCancelable<ValueType> extends Promise<ValueType> {
 
 	@param reason - The cancellation reason to reject the promise with.
 	*/
-	cancel(reason?: string): void;
+	cancel: (reason?: string) => void;
 
 	/**
 	Rejection reason when `.cancel()` is called.
