@@ -15,7 +15,7 @@ $ npm install p-cancelable
 ## Usage
 
 ```js
-const PCancelable = require('p-cancelable');
+import PCancelable from 'p-cancelable';
 
 const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 	const worker = new SomeLongRunningOperation();
@@ -28,35 +28,34 @@ const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 	worker.on('error', reject);
 });
 
-(async () => {
-	try {
-		console.log('Operation finished successfully:', await cancelablePromise);
-	} catch (error) {
-		if (cancelablePromise.isCanceled) {
-			// Handle the cancelation here
-			console.log('Operation was canceled');
-			return;
-		}
-
-		throw error;
-	}
-})();
-
 // Cancel the operation after 10 seconds
 setTimeout(() => {
 	cancelablePromise.cancel('Unicorn has changed its color');
 }, 10000);
+
+try {
+	console.log('Operation finished successfully:', await cancelablePromise);
+} catch (error) {
+	if (cancelablePromise.isCanceled) {
+		// Handle the cancelation here
+		console.log('Operation was canceled');
+		return;
+	}
+
+	throw error;
+}
 ```
 
 ## API
 
 ### new PCancelable(executor)
 
-Same as the [`Promise` constructor](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise), but with an appended `onCancel` parameter in `executor`.<br>
-Cancelling will reject the promise with `PCancelable.CancelError`. To avoid that, set `onCancel.shouldReject` to `false`.
+Same as the [`Promise` constructor](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise), but with an appended `onCancel` parameter in `executor`.
+
+Cancelling will reject the promise with `CancelError`. To avoid that, set `onCancel.shouldReject` to `false`.
 
 ```js
-const PCancelable = require('p-cancelable');
+import PCancelable from 'p-cancelable';
 
 const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 	const job = new Job();
@@ -96,14 +95,6 @@ Type: `boolean`
 
 Whether the promise is canceled.
 
-### PCancelable.CancelError
-
-Type: `Error`
-
-Rejection reason when `.cancel()` is called.
-
-It includes a `.isCanceled` property for convenience.
-
 ### PCancelable.fn(fn)
 
 Convenience method to make your promise-returning or async function cancelable.
@@ -111,7 +102,7 @@ Convenience method to make your promise-returning or async function cancelable.
 The function you specify will have `onCancel` appended to its parameters.
 
 ```js
-const PCancelable = require('p-cancelable');
+import PCancelable from 'p-cancelable';
 
 const fn = PCancelable.fn((input, onCancel) => {
 	const job = new Job();
@@ -130,11 +121,19 @@ const cancelablePromise = fn('input'); //=> PCancelable
 cancelablePromise.cancel();
 ```
 
+### CancelError
+
+Type: `Error`
+
+Rejection reason when `.cancel()` is called.
+
+It includes a `.isCanceled` property for convenience.
+
 ## FAQ
 
 ### Cancelable vs. Cancellable
 
-[In American English, the verb cancel is usually inflected canceled and canceling—with one l.](http://grammarist.com/spelling/cancel/)<br>Both a [browser API](https://developer.mozilla.org/en-US/docs/Web/API/Event/cancelable) and the [Cancelable Promises proposal](https://github.com/tc39/proposal-cancelable-promises) use this spelling.
+[In American English, the verb cancel is usually inflected canceled and canceling—with one l.](http://grammarist.com/spelling/cancel/) Both a [browser API](https://developer.mozilla.org/en-US/docs/Web/API/Event/cancelable) and the [Cancelable Promises proposal](https://github.com/tc39/proposal-cancelable-promises) use this spelling.
 
 ### What about the official [Cancelable Promises proposal](https://github.com/tc39/proposal-cancelable-promises)?
 

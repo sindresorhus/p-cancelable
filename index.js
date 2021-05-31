@@ -1,6 +1,4 @@
-'use strict';
-
-class CancelError extends Error {
+export class CancelError extends Error {
 	constructor(reason) {
 		super(reason || 'Promise was canceled');
 		this.name = 'CancelError';
@@ -11,13 +9,15 @@ class CancelError extends Error {
 	}
 }
 
-class PCancelable {
-	static fn(userFn) {
+// TODO: Use private class fields when ESLint 8 is out.
+
+export default class PCancelable {
+	static fn(userFunction) {
 		return (...arguments_) => {
 			return new PCancelable((resolve, reject, onCancel) => {
 				arguments_.push(onCancel);
 				// eslint-disable-next-line promise/prefer-await-to-then
-				userFn(...arguments_).then(resolve, reject);
+				userFunction(...arguments_).then(resolve, reject);
 			});
 		};
 	}
@@ -60,7 +60,7 @@ class PCancelable {
 				}
 			});
 
-			return executor(onResolve, onReject, onCancel);
+			executor(onResolve, onReject, onCancel);
 		});
 	}
 
@@ -70,10 +70,12 @@ class PCancelable {
 	}
 
 	catch(onRejected) {
+		// eslint-disable-next-line promise/prefer-await-to-then
 		return this._promise.catch(onRejected);
 	}
 
 	finally(onFinally) {
+		// eslint-disable-next-line promise/prefer-await-to-then
 		return this._promise.finally(onFinally);
 	}
 
@@ -106,6 +108,3 @@ class PCancelable {
 }
 
 Object.setPrototypeOf(PCancelable.prototype, Promise.prototype);
-
-module.exports = PCancelable;
-module.exports.CancelError = CancelError;

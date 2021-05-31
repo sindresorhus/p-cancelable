@@ -1,10 +1,6 @@
 import test from 'ava';
 import delay from 'delay';
-import promiseFinally from 'promise.prototype.finally';
-import PCancelable from '.';
-
-// TODO: Remove this when targeting Node.js 10
-promiseFinally.shim();
+import PCancelable, {CancelError} from './index.js';
 
 const fixture = Symbol('fixture');
 
@@ -27,7 +23,7 @@ test('new PCancelable()', async t => {
 
 	cancelablePromise.cancel();
 
-	await t.throwsAsync(cancelablePromise, PCancelable.CancelError);
+	await t.throwsAsync(cancelablePromise, {instanceOf: CancelError});
 
 	t.true(cancelablePromise.isCanceled);
 });
@@ -52,7 +48,7 @@ test('calling `.cancel()` multiple times', async t => {
 		await cancelablePromise;
 	} catch (error) {
 		cancelablePromise.cancel();
-		t.true(error instanceof PCancelable.CancelError);
+		t.true(error instanceof CancelError);
 	}
 });
 
@@ -81,7 +77,7 @@ test('no `onCancel` handler', async t => {
 
 	cancelablePromise.cancel();
 
-	await t.throwsAsync(cancelablePromise, PCancelable.CancelError);
+	await t.throwsAsync(cancelablePromise, {instanceOf: CancelError});
 });
 
 test('does not do anything when the promise is already settled', async t => {
@@ -121,11 +117,11 @@ test('PCancelable.fn()', async t => {
 
 	cancelablePromise.cancel();
 
-	await t.throwsAsync(cancelablePromise, PCancelable.CancelError);
+	await t.throwsAsync(cancelablePromise, {instanceOf: CancelError});
 });
 
 test('PCancelable.CancelError', t => {
-	t.true(PCancelable.CancelError.prototype instanceof Error);
+	t.true(CancelError.prototype instanceof Error);
 });
 
 test('rejects when canceled', async t => {
@@ -135,7 +131,7 @@ test('rejects when canceled', async t => {
 
 	cancelablePromise.cancel();
 
-	await t.throwsAsync(cancelablePromise, PCancelable.CancelError);
+	await t.throwsAsync(cancelablePromise, {instanceOf: CancelError});
 });
 
 test('rejects when canceled after a delay', async t => {
@@ -147,7 +143,7 @@ test('rejects when canceled after a delay', async t => {
 		cancelablePromise.cancel();
 	}, 100);
 
-	await t.throwsAsync(cancelablePromise, PCancelable.CancelError);
+	await t.throwsAsync(cancelablePromise, {instanceOf: CancelError});
 });
 
 test('supports multiple `onCancel` handlers', async t => {
@@ -163,7 +159,7 @@ test('supports multiple `onCancel` handlers', async t => {
 
 	try {
 		await cancelablePromise;
-	} catch (_) {}
+	} catch {}
 
 	t.is(i, 3);
 });
@@ -172,33 +168,37 @@ test('cancel error includes a `isCanceled` property', async t => {
 	const cancelablePromise = new PCancelable(() => {});
 	cancelablePromise.cancel();
 
-	const err = await t.throwsAsync(cancelablePromise);
-	t.true(err.isCanceled);
+	const error = await t.throwsAsync(cancelablePromise);
+	t.true(error.isCanceled);
 });
 
-test.cb('supports `finally`', t => {
+test('supports `finally`', async t => {
 	const cancelablePromise = new PCancelable(async resolve => {
 		await delay(1);
 		resolve();
 	});
 
-	cancelablePromise.finally(() => {
-		t.end();
-	});
+	t.plan(1);
+
+	try {
+		await cancelablePromise;
+	} finally {
+		t.pass();
+	}
 });
 
 test('default message with no reason', async t => {
 	const cancelablePromise = new PCancelable(() => {});
 	cancelablePromise.cancel();
 
-	await t.throwsAsync(cancelablePromise, 'Promise was canceled');
+	await t.throwsAsync(cancelablePromise, {message: 'Promise was canceled'});
 });
 
 test('custom reason', async t => {
 	const cancelablePromise = new PCancelable(() => {});
 	cancelablePromise.cancel('unicorn');
 
-	await t.throwsAsync(cancelablePromise, 'unicorn');
+	await t.throwsAsync(cancelablePromise, {message: 'unicorn'});
 });
 
 test('prevent rejection', async t => {
@@ -218,7 +218,7 @@ test('prevent rejection and reject later', async t => {
 	});
 
 	cancelablePromise.cancel();
-	await t.throwsAsync(cancelablePromise, 'unicorn');
+	await t.throwsAsync(cancelablePromise, {message: 'unicorn'});
 });
 
 test('prevent rejection and resolve later', async t => {
