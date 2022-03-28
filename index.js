@@ -27,6 +27,7 @@ export default class PCancelable {
 		this._isPending = true;
 		this._isCanceled = false;
 		this._rejectOnCancel = true;
+		this._isResolved = false;
 
 		this._promise = new Promise((resolve, reject) => {
 			this._reject = reject;
@@ -36,6 +37,8 @@ export default class PCancelable {
 					this._isPending = false;
 					resolve(value);
 				}
+
+				this._isResolved = true;
 			};
 
 			const onReject = error => {
@@ -45,7 +48,8 @@ export default class PCancelable {
 
 			const onCancel = handler => {
 				if (!this._isPending) {
-					throw new Error('The `onCancel` handler was attached after the promise settled.');
+					const promiseState = this._isResolved ? 'resolved' : 'rejected';
+					throw new Error(`The \`onCancel\` handler was attached after the promise ${promiseState}.`);
 				}
 
 				this._cancelHandlers.push(handler);
