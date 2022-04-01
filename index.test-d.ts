@@ -45,9 +45,7 @@ const function3 = PCancelable.fn(
 		_parameter2: boolean,
 		_parameter3: number,
 		_onCancel: OnCancelFunction
-	) => {
-		return Promise.resolve(10);
-	}
+	) => Promise.resolve(10)
 );
 expectType<
 (
@@ -64,9 +62,7 @@ const function4 = PCancelable.fn(
 		_parameter3: number,
 		_parameter4: symbol,
 		_onCancel: OnCancelFunction
-	) => {
-		return Promise.resolve(10);
-	}
+	) => Promise.resolve(10)
 );
 expectType<
 (
@@ -85,9 +81,7 @@ const function5 = PCancelable.fn(
 		_parameter4: symbol,
 		_parameter5: null,
 		_onCancel: OnCancelFunction
-	) => {
-		return Promise.resolve(10);
-	}
+	) => Promise.resolve(10)
 );
 expectType<
 (

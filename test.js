@@ -176,7 +176,7 @@ test('`onCancel` handler could not be attached after the promise resolved', asyn
 	const promiseState = 'resolved';
 	const errorMessage = `The \`onCancel\` handler was attached after the promise ${promiseState}.`;
 
-	// eslint-disable-next-line promise/param-names, no-async-promise-executor
+	// eslint-disable-next-line no-async-promise-executor
 	const testPromise = new Promise(async testResolve => {
 		const cancelablePromise = new PCancelable((resolve, _, onCancel) => {
 			resolve();
@@ -200,7 +200,7 @@ test('`onCancel` handler could not be attached after the promise rejected', asyn
 	const promiseState = 'rejected';
 	const errorMessage = `The \`onCancel\` handler was attached after the promise ${promiseState}.`;
 
-	// eslint-disable-next-line promise/param-names, no-async-promise-executor
+	// eslint-disable-next-line no-async-promise-executor
 	const testPromise = new Promise(async testResolve => {
 		const cancelablePromise = new PCancelable((_, reject, onCancel) => {
 			reject(new Error('some error'));
@@ -310,6 +310,6 @@ test('throws immediately as soon as .cancel() is called', async t => {
 	cancelablePromise.cancel();
 
 	await t.throwsAsync(cancelablePromise, {
-		message: 'Promise was canceled'
+		message: 'Promise was canceled',
 	});
 });

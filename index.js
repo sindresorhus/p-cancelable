@@ -13,13 +13,10 @@ export class CancelError extends Error {
 
 export default class PCancelable {
 	static fn(userFunction) {
-		return (...arguments_) => {
-			return new PCancelable((resolve, reject, onCancel) => {
-				arguments_.push(onCancel);
-				// eslint-disable-next-line promise/prefer-await-to-then
-				userFunction(...arguments_).then(resolve, reject);
-			});
-		};
+		return (...arguments_) => new PCancelable((resolve, reject, onCancel) => {
+			arguments_.push(onCancel);
+			userFunction(...arguments_).then(resolve, reject);
+		});
 	}
 
 	constructor(executor) {
@@ -60,8 +57,8 @@ export default class PCancelable {
 					get: () => this._rejectOnCancel,
 					set: boolean => {
 						this._rejectOnCancel = boolean;
-					}
-				}
+					},
+				},
 			});
 
 			executor(onResolve, onReject, onCancel);
@@ -69,17 +66,14 @@ export default class PCancelable {
 	}
 
 	then(onFulfilled, onRejected) {
-		// eslint-disable-next-line promise/prefer-await-to-then
 		return this._promise.then(onFulfilled, onRejected);
 	}
 
 	catch(onRejected) {
-		// eslint-disable-next-line promise/prefer-await-to-then
 		return this._promise.catch(onRejected);
 	}
 
 	finally(onFinally) {
-		// eslint-disable-next-line promise/prefer-await-to-then
 		return this._promise.finally(onFinally);
 	}
 
