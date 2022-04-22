@@ -9,6 +9,13 @@ export class CancelError extends Error {
 	}
 }
 
+const promiseState = {
+	pending: 'pending',
+	canceled: 'canceled',
+	resolved: 'resolved',
+	rejected: 'rejected',
+};
+
 // TODO: Use private class fields when ESLint 8 is out.
 
 export default class PCancelable {
@@ -21,32 +28,28 @@ export default class PCancelable {
 
 	constructor(executor) {
 		this._cancelHandlers = [];
-		this._isPending = true;
-		this._isCanceled = false;
 		this._rejectOnCancel = true;
-		this._isResolved = false;
+		this._state = promiseState.pending;
 
 		this._promise = new Promise((resolve, reject) => {
 			this._reject = reject;
 
 			const onResolve = value => {
-				if (!this._isCanceled || !onCancel.shouldReject) {
-					this._isPending = false;
+				if (this._state !== promiseState.canceled || !onCancel.shouldReject) {
 					resolve(value);
 				}
 
-				this._isResolved = true;
+				this._state = promiseState.resolved;
 			};
 
 			const onReject = error => {
-				this._isPending = false;
+				this._state = promiseState.rejected;
 				reject(error);
 			};
 
 			const onCancel = handler => {
-				if (!this._isPending) {
-					const promiseState = this._isResolved ? 'resolved' : 'rejected';
-					throw new Error(`The \`onCancel\` handler was attached after the promise ${promiseState}.`);
+				if (this._state !== promiseState.pending) {
+					throw new Error(`The \`onCancel\` handler was attached after the promise ${this._state}.`);
 				}
 
 				this._cancelHandlers.push(handler);
@@ -78,11 +81,11 @@ export default class PCancelable {
 	}
 
 	cancel(reason) {
-		if (!this._isPending || this._isCanceled) {
+		if (this._state !== promiseState.pending || this._state === promiseState.canceled) {
 			return;
 		}
 
-		this._isCanceled = true;
+		this._state = promiseState.canceled;
 
 		if (this._cancelHandlers.length > 0) {
 			try {
@@ -101,7 +104,7 @@ export default class PCancelable {
 	}
 
 	get isCanceled() {
-		return this._isCanceled;
+		return this._state === promiseState.canceled;
 	}
 }
 
