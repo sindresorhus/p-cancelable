@@ -16,8 +16,6 @@ const promiseState = Object.freeze({
 	rejected: Symbol('rejected'),
 });
 
-// TODO: Use private class fields when ESLint 8 is out.
-
 export default class PCancelable {
 	static fn(userFunction) {
 		return (...arguments_) => new PCancelable((resolve, reject, onCancel) => {
@@ -26,41 +24,43 @@ export default class PCancelable {
 		});
 	}
 
-	constructor(executor) {
-		this._cancelHandlers = [];
-		this._rejectOnCancel = true;
-		this._state = promiseState.pending;
+	#cancelHandlers = [];
+	#rejectOnCancel = true;
+	#state = promiseState.pending;
+	#promise;
+	#reject;
 
-		this._promise = new Promise((resolve, reject) => {
-			this._reject = reject;
+	constructor(executor) {
+		this.#promise = new Promise((resolve, reject) => {
+			this.#reject = reject;
 
 			const onResolve = value => {
-				if (this._state !== promiseState.canceled || !onCancel.shouldReject) {
+				if (this.#state !== promiseState.canceled || !onCancel.shouldReject) {
 					resolve(value);
-					this._state = promiseState.resolved;
+					this.#state = promiseState.resolved;
 				}
 			};
 
 			const onReject = error => {
-				if (this._state !== promiseState.canceled || !onCancel.shouldReject) {
+				if (this.#state !== promiseState.canceled || !onCancel.shouldReject) {
 					reject(error);
-					this._state = promiseState.rejected;
+					this.#state = promiseState.rejected;
 				}
 			};
 
 			const onCancel = handler => {
-				if (this._state !== promiseState.pending) {
-					throw new Error(`The \`onCancel\` handler was attached after the promise ${this._state.description}.`);
+				if (this.#state !== promiseState.pending) {
+					throw new Error(`The \`onCancel\` handler was attached after the promise ${this.#state.description}.`);
 				}
 
-				this._cancelHandlers.push(handler);
+				this.#cancelHandlers.push(handler);
 			};
 
 			Object.defineProperties(onCancel, {
 				shouldReject: {
-					get: () => this._rejectOnCancel,
+					get: () => this.#rejectOnCancel,
 					set: boolean => {
-						this._rejectOnCancel = boolean;
+						this.#rejectOnCancel = boolean;
 					},
 				},
 			});
@@ -69,43 +69,44 @@ export default class PCancelable {
 		});
 	}
 
+	// eslint-disable-next-line unicorn/no-thenable
 	then(onFulfilled, onRejected) {
-		return this._promise.then(onFulfilled, onRejected);
+		return this.#promise.then(onFulfilled, onRejected);
 	}
 
 	catch(onRejected) {
-		return this._promise.catch(onRejected);
+		return this.#promise.catch(onRejected);
 	}
 
 	finally(onFinally) {
-		return this._promise.finally(onFinally);
+		return this.#promise.finally(onFinally);
 	}
 
 	cancel(reason) {
-		if (this._state !== promiseState.pending) {
+		if (this.#state !== promiseState.pending) {
 			return;
 		}
 
-		this._state = promiseState.canceled;
+		this.#state = promiseState.canceled;
 
-		if (this._cancelHandlers.length > 0) {
+		if (this.#cancelHandlers.length > 0) {
 			try {
-				for (const handler of this._cancelHandlers) {
+				for (const handler of this.#cancelHandlers) {
 					handler();
 				}
 			} catch (error) {
-				this._reject(error);
+				this.#reject(error);
 				return;
 			}
 		}
 
-		if (this._rejectOnCancel) {
-			this._reject(new CancelError(reason));
+		if (this.#rejectOnCancel) {
+			this.#reject(new CancelError(reason));
 		}
 	}
 
 	get isCanceled() {
-		return this._state === promiseState.canceled;
+		return this.#state === promiseState.canceled;
 	}
 }
 

@@ -193,7 +193,8 @@ test('`onCancel` handler could not be attached after the promise resolved', asyn
 		await cancelablePromise;
 	});
 
-	t.is((await testPromise).message, errorMessage);
+	const {message} = await testPromise;
+	t.is(message, errorMessage);
 });
 
 test('`onCancel` handler could not be attached after the promise rejected', async t => {
@@ -217,7 +218,8 @@ test('`onCancel` handler could not be attached after the promise rejected', asyn
 		await t.throwsAsync(cancelablePromise, {message: 'some error'});
 	});
 
-	t.is((await testPromise).message, errorMessage);
+	const {message} = await testPromise;
+	t.is(message, errorMessage);
 });
 
 test('`onCancel` handler could not be attached after the promise canceled', async t => {
@@ -243,7 +245,8 @@ test('`onCancel` handler could not be attached after the promise canceled', asyn
 		await cancelablePromise;
 	});
 
-	t.is((await testPromise).message, errorMessage);
+	const {message} = await testPromise;
+	t.is(message, errorMessage);
 });
 
 test('supports `finally`', async t => {
