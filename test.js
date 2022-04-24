@@ -178,7 +178,7 @@ test('`onCancel` handler could not be attached after the promise resolved', asyn
 
 	// eslint-disable-next-line no-async-promise-executor
 	const testPromise = new Promise(async testResolve => {
-		const cancelablePromise = new PCancelable((resolve, _, onCancel) => {
+		const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 			resolve();
 
 			setTimeout(() => {
@@ -202,7 +202,7 @@ test('`onCancel` handler could not be attached after the promise rejected', asyn
 
 	// eslint-disable-next-line no-async-promise-executor
 	const testPromise = new Promise(async testResolve => {
-		const cancelablePromise = new PCancelable((_, reject, onCancel) => {
+		const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 			reject(new Error('some error'));
 
 			setTimeout(() => {
@@ -215,6 +215,32 @@ test('`onCancel` handler could not be attached after the promise rejected', asyn
 		});
 
 		await t.throwsAsync(cancelablePromise, {message: 'some error'});
+	});
+
+	t.is((await testPromise).message, errorMessage);
+});
+
+test('`onCancel` handler could not be attached after the promise canceled', async t => {
+	const promiseState = 'canceled';
+	const errorMessage = `The \`onCancel\` handler was attached after the promise ${promiseState}.`;
+
+	// eslint-disable-next-line no-async-promise-executor
+	const testPromise = new Promise(async testResolve => {
+		const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
+			onCancel.shouldReject = false;
+
+			setTimeout(() => {
+				try {
+					onCancel();
+				} catch (error) {
+					testResolve(error);
+				}
+			}, 0);
+		});
+
+		cancelablePromise.cancel();
+
+		await cancelablePromise;
 	});
 
 	t.is((await testPromise).message, errorMessage);
