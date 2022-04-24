@@ -16,58 +16,12 @@ Accepts a function that is called when the promise is canceled.
 You're not required to call this function. You can call this function multiple times to add multiple cancel handlers.
 */
 export interface OnCancelFunction {
-	shouldReject: boolean;
 	(cancelHandler: () => void): void;
+	shouldReject: boolean;
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export default class PCancelable<ValueType> extends Promise<ValueType> {
-	/**
-	Whether the promise is canceled.
-	*/
-	readonly isCanceled: boolean;
-
-	/**
-	Cancel the promise and optionally provide a reason.
-
-	The cancellation is synchronous. Calling it after the promise has settled or multiple times does nothing.
-
-	@param reason - The cancellation reason to reject the promise with.
-	*/
-	cancel: (reason?: string) => void;
-
-	/**
-	Create a promise that can be canceled.
-
-	Can be constructed in the same was as a [`Promise` constructor](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise), but with an appended `onCancel` parameter in `executor`. `PCancelable` is a subclass of `Promise`.
-
-	Cancelling will reject the promise with `CancelError`. To avoid that, set `onCancel.shouldReject` to `false`.
-
-	@example
-	```
-	import PCancelable from 'p-cancelable';
-
-	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
-		const job = new Job();
-
-		onCancel.shouldReject = false;
-		onCancel(() => {
-			job.stop();
-		});
-
-		job.on('finish', resolve);
-	});
-
-	cancelablePromise.cancel(); // Doesn't throw an error
-	```
-	*/
-	constructor(
-		executor: (
-			resolve: (value?: ValueType | PromiseLike<ValueType>) => void,
-			reject: (reason?: unknown) => void,
-			onCancel: OnCancelFunction
-		) => void
-	);
-
 	/**
 	Convenience method to make your promise-returning or async function cancelable.
 
@@ -145,7 +99,7 @@ export default class PCancelable<ValueType> extends Promise<ValueType> {
 		Agument3Type,
 		Agument4Type,
 		Agument5Type,
-		ReturnType
+		ReturnType,
 	>(
 		userFn: (
 			argument1: Agument1Type,
@@ -165,4 +119,51 @@ export default class PCancelable<ValueType> extends Promise<ValueType> {
 	static fn<ReturnType>(
 		userFn: (...arguments: unknown[]) => PromiseLike<ReturnType>
 	): (...arguments: unknown[]) => PCancelable<ReturnType>;
+
+	/**
+	Whether the promise is canceled.
+	*/
+	readonly isCanceled: boolean;
+
+	/**
+	Cancel the promise and optionally provide a reason.
+
+	The cancellation is synchronous. Calling it after the promise has settled or multiple times does nothing.
+
+	@param reason - The cancellation reason to reject the promise with.
+	*/
+	cancel: (reason?: string) => void;
+
+	/**
+	Create a promise that can be canceled.
+
+	Can be constructed in the same was as a [`Promise` constructor](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise), but with an appended `onCancel` parameter in `executor`. `PCancelable` is a subclass of `Promise`.
+
+	Cancelling will reject the promise with `CancelError`. To avoid that, set `onCancel.shouldReject` to `false`.
+
+	@example
+	```
+	import PCancelable from 'p-cancelable';
+
+	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
+		const job = new Job();
+
+		onCancel.shouldReject = false;
+		onCancel(() => {
+			job.stop();
+		});
+
+		job.on('finish', resolve);
+	});
+
+	cancelablePromise.cancel(); // Doesn't throw an error
+	```
+	*/
+	constructor(
+		executor: (
+			resolve: (value?: ValueType | PromiseLike<ValueType>) => void,
+			reject: (reason?: unknown) => void,
+			onCancel: OnCancelFunction
+		) => void
+	);
 }

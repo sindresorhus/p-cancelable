@@ -172,6 +172,80 @@ test('cancel error includes a `isCanceled` property', async t => {
 	t.true(error.isCanceled);
 });
 
+test('`onCancel` handler could not be attached after the promise resolved', async t => {
+	const promiseState = 'resolved';
+	const errorMessage = `The \`onCancel\` handler was attached after the promise ${promiseState}.`;
+
+	// eslint-disable-next-line no-async-promise-executor
+	const testPromise = new Promise(async testResolve => {
+		const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
+			resolve();
+
+			setTimeout(() => {
+				try {
+					onCancel();
+				} catch (error) {
+					testResolve(error);
+				}
+			}, 0);
+		});
+
+		await cancelablePromise;
+	});
+
+	t.is((await testPromise).message, errorMessage);
+});
+
+test('`onCancel` handler could not be attached after the promise rejected', async t => {
+	const promiseState = 'rejected';
+	const errorMessage = `The \`onCancel\` handler was attached after the promise ${promiseState}.`;
+
+	// eslint-disable-next-line no-async-promise-executor
+	const testPromise = new Promise(async testResolve => {
+		const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
+			reject(new Error('some error'));
+
+			setTimeout(() => {
+				try {
+					onCancel();
+				} catch (error) {
+					testResolve(error);
+				}
+			}, 0);
+		});
+
+		await t.throwsAsync(cancelablePromise, {message: 'some error'});
+	});
+
+	t.is((await testPromise).message, errorMessage);
+});
+
+test('`onCancel` handler could not be attached after the promise canceled', async t => {
+	const promiseState = 'canceled';
+	const errorMessage = `The \`onCancel\` handler was attached after the promise ${promiseState}.`;
+
+	// eslint-disable-next-line no-async-promise-executor
+	const testPromise = new Promise(async testResolve => {
+		const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
+			onCancel.shouldReject = false;
+
+			setTimeout(() => {
+				try {
+					onCancel();
+				} catch (error) {
+					testResolve(error);
+				}
+			}, 0);
+		});
+
+		cancelablePromise.cancel();
+
+		await cancelablePromise;
+	});
+
+	t.is((await testPromise).message, errorMessage);
+});
+
 test('supports `finally`', async t => {
 	const cancelablePromise = new PCancelable(async resolve => {
 		await delay(1);
@@ -262,6 +336,6 @@ test('throws immediately as soon as .cancel() is called', async t => {
 	cancelablePromise.cancel();
 
 	await t.throwsAsync(cancelablePromise, {
-		message: 'Promise was canceled'
+		message: 'Promise was canceled',
 	});
 });
