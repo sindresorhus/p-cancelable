@@ -1,4 +1,4 @@
-export class CancelError extends Error {
+class CancelError extends Error {
 	constructor(reason) {
 		super(reason || 'Promise was canceled');
 		this.name = 'CancelError';
@@ -16,7 +16,7 @@ const promiseState = Object.freeze({
 	rejected: Symbol('rejected'),
 });
 
-export default class PCancelable {
+class PCancelable {
 	static fn(userFunction) {
 		return (...arguments_) => new PCancelable((resolve, reject, onCancel) => {
 			arguments_.push(onCancel);
@@ -111,3 +111,6 @@ export default class PCancelable {
 }
 
 Object.setPrototypeOf(PCancelable.prototype, Promise.prototype);
+
+module.exports = PCancelable;
+module.exports.CancelError = CancelError;

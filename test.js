@@ -1,6 +1,6 @@
-import test from 'ava';
-import delay from 'delay';
-import PCancelable, {CancelError} from './index.js';
+const test = require('ava');
+const delay = require('delay');
+const PCancelable = require('./index.js');
 
 const fixture = Symbol('fixture');
 
@@ -23,7 +23,7 @@ test('new PCancelable()', async t => {
 
 	cancelablePromise.cancel();
 
-	await t.throwsAsync(cancelablePromise, {instanceOf: CancelError});
+	await t.throwsAsync(cancelablePromise, {instanceOf: PCancelable.CancelError});
 
 	t.true(cancelablePromise.isCanceled);
 });
@@ -48,7 +48,7 @@ test('calling `.cancel()` multiple times', async t => {
 		await cancelablePromise;
 	} catch (error) {
 		cancelablePromise.cancel();
-		t.true(error instanceof CancelError);
+		t.true(error instanceof PCancelable.CancelError);
 	}
 });
 
@@ -77,7 +77,7 @@ test('no `onCancel` handler', async t => {
 
 	cancelablePromise.cancel();
 
-	await t.throwsAsync(cancelablePromise, {instanceOf: CancelError});
+	await t.throwsAsync(cancelablePromise, {instanceOf: PCancelable.CancelError});
 });
 
 test('does not do anything when the promise is already settled', async t => {
@@ -117,11 +117,11 @@ test('PCancelable.fn()', async t => {
 
 	cancelablePromise.cancel();
 
-	await t.throwsAsync(cancelablePromise, {instanceOf: CancelError});
+	await t.throwsAsync(cancelablePromise, {instanceOf: PCancelable.CancelError});
 });
 
 test('PCancelable.CancelError', t => {
-	t.true(CancelError.prototype instanceof Error);
+	t.true(PCancelable.CancelError.prototype instanceof Error);
 });
 
 test('rejects when canceled', async t => {
@@ -131,7 +131,7 @@ test('rejects when canceled', async t => {
 
 	cancelablePromise.cancel();
 
-	await t.throwsAsync(cancelablePromise, {instanceOf: CancelError});
+	await t.throwsAsync(cancelablePromise, {instanceOf: PCancelable.CancelError});
 });
 
 test('rejects when canceled after a delay', async t => {
@@ -143,7 +143,7 @@ test('rejects when canceled after a delay', async t => {
 		cancelablePromise.cancel();
 	}, 100);
 
-	await t.throwsAsync(cancelablePromise, {instanceOf: CancelError});
+	await t.throwsAsync(cancelablePromise, {instanceOf: PCancelable.CancelError});
 });
 
 test('supports multiple `onCancel` handlers', async t => {

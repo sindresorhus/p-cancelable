@@ -1,16 +1,12 @@
 {
 	"name": "p-cancelable",
 	"version": "4.0.0",
-	"description": "Create a promise that can be canceled",
+	"description": "Create a promise that can be canceled (commonjs)",
 	"license": "MIT",
-	"repository": "sindresorhus/p-cancelable",
-	"author": {
-		"name": "Sindre Sorhus",
-		"email": "sindresorhus@gmail.com",
-		"url": "https://sindresorhus.com"
-	},
-	"type": "module",
-	"exports": "./index.js",
+	"repository": "Loupi/p-cancelable",
+	"author": "Louis-Pierre Beaumont",
+	"main": "./index.js",
+  "types": "./index.d.ts",
 	"engines": {
 		"node": ">=14.16"
 	},
@@ -46,5 +42,10 @@
 		"delay": "^5.0.0",
 		"tsd": "^0.20.0",
 		"xo": "^0.48.0"
-	}
+	},
+	"xo": {
+    "rules": {
+      "unicorn/prefer-module": 0
+    }
+  }
 }
