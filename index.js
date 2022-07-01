@@ -37,14 +37,20 @@ export default class PCancelable {
 			const onResolve = value => {
 				if (this.#state !== promiseState.canceled || !onCancel.shouldReject) {
 					resolve(value);
-					this.#state = promiseState.resolved;
+
+					if (this.#state !== promiseState.canceled) {
+						this.#state = promiseState.resolved;
+					}
 				}
 			};
 
 			const onReject = error => {
 				if (this.#state !== promiseState.canceled || !onCancel.shouldReject) {
 					reject(error);
-					this.#state = promiseState.rejected;
+
+					if (this.#state !== promiseState.canceled) {
+						this.#state = promiseState.rejected;
+					}
 				}
 			};
 
