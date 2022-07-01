@@ -286,7 +286,7 @@ test('prevent rejection', async t => {
 
 	cancelablePromise.cancel();
 	await t.notThrowsAsync(cancelablePromise);
-	// cancelablePromise is canceled before cancelablePromise resolved.
+	// `cancelablePromise` is canceled before cancelablePromise resolved.
 	t.true(cancelablePromise.isCanceled);
 });
 
@@ -298,7 +298,7 @@ test('prevent rejection and reject later', async t => {
 
 	cancelablePromise.cancel();
 	await t.throwsAsync(cancelablePromise, {message: 'unicorn'});
-	// cancelablePromise is canceled before cancelablePromise rejected with unicorn Error.
+	// `cancelablePromise` is canceled before cancelablePromise rejected with unicorn Error.
 	t.true(cancelablePromise.isCanceled);
 });
 
