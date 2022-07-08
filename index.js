@@ -37,20 +37,14 @@ export default class PCancelable {
 			const onResolve = value => {
 				if (this.#state !== promiseState.canceled || !onCancel.shouldReject) {
 					resolve(value);
-
-					if (this.#state !== promiseState.canceled) {
-						this.#state = promiseState.resolved;
-					}
+					this.#setState(promiseState.resolved);
 				}
 			};
 
 			const onReject = error => {
 				if (this.#state !== promiseState.canceled || !onCancel.shouldReject) {
 					reject(error);
-
-					if (this.#state !== promiseState.canceled) {
-						this.#state = promiseState.rejected;
-					}
+					this.#setState(promiseState.rejected);
 				}
 			};
 
@@ -93,7 +87,7 @@ export default class PCancelable {
 			return;
 		}
 
-		this.#state = promiseState.canceled;
+		this.#setState(promiseState.canceled);
 
 		if (this.#cancelHandlers.length > 0) {
 			try {
@@ -113,6 +107,12 @@ export default class PCancelable {
 
 	get isCanceled() {
 		return this.#state === promiseState.canceled;
+	}
+
+	#setState(state) {
+		if (this.#state === promiseState.pending) {
+			this.#state = state;
+		}
 	}
 }
 
