@@ -149,4 +149,5 @@ The maintainers of p-cancelable and thousands of other packages are working with
 
 - [p-progress](https://github.com/sindresorhus/p-progress) - Create a promise that reports progress
 - [p-lazy](https://github.com/sindresorhus/p-lazy) - Create a lazy promise that defers execution until `.then()` or `.catch()` is called
+- [p-signal](https://github.com/astoilkov/p-signal) - Cancel promises using `AbortSignal`
 - [More…](https://github.com/sindresorhus/promise-fun)
