@@ -4,6 +4,7 @@
 	"description": "Create a promise that can be canceled",
 	"license": "MIT",
 	"repository": "sindresorhus/p-cancelable",
+	"funding": "https://github.com/sponsors/sindresorhus",
 	"author": {
 		"name": "Sindre Sorhus",
 		"email": "sindresorhus@gmail.com",
@@ -11,6 +12,8 @@
 	},
 	"type": "module",
 	"exports": "./index.js",
+	"types": "./index.d.ts",
+	"sideEffects": false,
 	"engines": {
 		"node": ">=14.16"
 	},
