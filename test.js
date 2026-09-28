@@ -1,15 +1,16 @@
-import test from 'ava';
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
 import delay from 'delay';
 import PCancelable, {CancelError} from './index.js';
 
 const fixture = Symbol('fixture');
 
-test('new PCancelable()', async t => {
-	t.plan(5);
+test('new PCancelable()', async () => {
+	let cancelHandlerCalls = 0;
 
 	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 		onCancel(() => {
-			t.pass();
+			cancelHandlerCalls++;
 		});
 
 		setTimeout(() => {
@@ -17,23 +18,24 @@ test('new PCancelable()', async t => {
 		}, 50);
 	});
 
-	t.true(cancelablePromise instanceof Promise);
+	assert.ok(cancelablePromise instanceof Promise);
 
-	t.false(cancelablePromise.isCanceled);
+	assert.equal(cancelablePromise.isCanceled, false);
 
 	cancelablePromise.cancel();
 
-	await t.throwsAsync(cancelablePromise, {instanceOf: CancelError});
+	await assert.rejects(cancelablePromise, CancelError);
 
-	t.true(cancelablePromise.isCanceled);
+	assert.equal(cancelablePromise.isCanceled, true);
+	assert.equal(cancelHandlerCalls, 1);
 });
 
-test('calling `.cancel()` multiple times', async t => {
-	t.plan(2);
+test('calling `.cancel()` multiple times', async () => {
+	let cancelHandlerCalls = 0;
 
 	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 		onCancel(() => {
-			t.pass();
+			cancelHandlerCalls++;
 		});
 
 		setTimeout(() => {
@@ -44,18 +46,18 @@ test('calling `.cancel()` multiple times', async t => {
 	cancelablePromise.cancel();
 	cancelablePromise.cancel();
 
-	try {
-		await cancelablePromise;
-	} catch (error) {
-		cancelablePromise.cancel();
-		t.true(error instanceof CancelError);
-	}
+	const error = await cancelablePromise.catch(error => error);
+
+	assert.ok(error instanceof CancelError);
+	assert.equal(cancelHandlerCalls, 1);
 });
 
-test('no `.cancel()` call', async t => {
+test('no `.cancel()` call', async () => {
+	let isCancelHandlerCalled = false;
+
 	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 		onCancel(() => {
-			t.fail();
+			isCancelHandlerCalled = true;
 		});
 
 		setTimeout(() => {
@@ -63,12 +65,11 @@ test('no `.cancel()` call', async t => {
 		}, 50);
 	});
 
-	t.is(await cancelablePromise, fixture);
+	assert.equal(await cancelablePromise, fixture);
+	assert.equal(isCancelHandlerCalled, false);
 });
 
-test('no `onCancel` handler', async t => {
-	t.plan(1);
-
+test('no `onCancel` handler', async () => {
 	const cancelablePromise = new PCancelable(resolve => {
 		setTimeout(() => {
 			resolve(fixture);
@@ -77,35 +78,36 @@ test('no `onCancel` handler', async t => {
 
 	cancelablePromise.cancel();
 
-	await t.throwsAsync(cancelablePromise, {instanceOf: CancelError});
+	await assert.rejects(cancelablePromise, CancelError);
 });
 
-test('does not do anything when the promise is already settled', async t => {
-	t.plan(2);
+test('does not do anything when the promise is already settled', async () => {
+	let isCancelHandlerCalled = false;
 
 	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 		onCancel(() => {
-			t.fail();
+			isCancelHandlerCalled = true;
 		});
 
 		resolve();
 	});
 
-	t.false(cancelablePromise.isCanceled);
+	assert.equal(cancelablePromise.isCanceled, false);
 
 	await cancelablePromise;
 
 	cancelablePromise.cancel();
 
-	t.false(cancelablePromise.isCanceled);
+	assert.equal(cancelablePromise.isCanceled, false);
+	assert.equal(isCancelHandlerCalled, false);
 });
 
-test('PCancelable.fn()', async t => {
-	t.plan(2);
+test('PCancelable.fn()', async () => {
+	let cancelHandlerCalls = 0;
 
 	const cancelableFunction = PCancelable.fn(async (input, onCancel) => {
 		onCancel(() => {
-			t.pass();
+			cancelHandlerCalls++;
 		});
 
 		await delay(50);
@@ -117,24 +119,25 @@ test('PCancelable.fn()', async t => {
 
 	cancelablePromise.cancel();
 
-	await t.throwsAsync(cancelablePromise, {instanceOf: CancelError});
+	await assert.rejects(cancelablePromise, CancelError);
+	assert.equal(cancelHandlerCalls, 1);
 });
 
-test('PCancelable.CancelError', t => {
-	t.true(CancelError.prototype instanceof Error);
+test('PCancelable.CancelError', () => {
+	assert.ok(CancelError.prototype instanceof Error);
 });
 
-test('rejects when canceled', async t => {
+test('rejects when canceled', async () => {
 	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 		onCancel(() => {});
 	});
 
 	cancelablePromise.cancel();
 
-	await t.throwsAsync(cancelablePromise, {instanceOf: CancelError});
+	await assert.rejects(cancelablePromise, CancelError);
 });
 
-test('rejects when canceled after a delay', async t => {
+test('rejects when canceled after a delay', async () => {
 	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 		onCancel(() => {});
 	});
@@ -143,191 +146,172 @@ test('rejects when canceled after a delay', async t => {
 		cancelablePromise.cancel();
 	}, 100);
 
-	await t.throwsAsync(cancelablePromise, {instanceOf: CancelError});
+	await assert.rejects(cancelablePromise, CancelError);
 });
 
-test('supports multiple `onCancel` handlers', async t => {
-	let i = 0;
+test('supports multiple `onCancel` handlers', async () => {
+	let cancelHandlerCalls = 0;
 
 	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
-		onCancel(() => i++);
-		onCancel(() => i++);
-		onCancel(() => i++);
+		onCancel(() => {
+			cancelHandlerCalls++;
+		});
+		onCancel(() => {
+			cancelHandlerCalls++;
+		});
+		onCancel(() => {
+			cancelHandlerCalls++;
+		});
 	});
 
 	cancelablePromise.cancel();
 
-	try {
-		await cancelablePromise;
-	} catch {}
+	await assert.rejects(cancelablePromise, CancelError);
 
-	t.is(i, 3);
+	assert.equal(cancelHandlerCalls, 3);
 });
 
-test('cancel error includes a `isCanceled` property', async t => {
+test('cancel error includes a `isCanceled` property', async () => {
 	const cancelablePromise = new PCancelable(() => {});
 	cancelablePromise.cancel();
 
-	const error = await t.throwsAsync(cancelablePromise);
-	t.true(error.isCanceled);
+	const error = await cancelablePromise.catch(error => error);
+	assert.ok(error.isCanceled);
 });
 
-test('`onCancel` handler could not be attached after the promise resolved', async t => {
-	const promiseState = 'resolved';
-	const errorMessage = `The \`onCancel\` handler was attached after the promise ${promiseState}.`;
+test('`onCancel` handler could not be attached after the promise resolved', async () => {
+	let onCancel;
 
-	// eslint-disable-next-line no-async-promise-executor
-	const testPromise = new Promise(async testResolve => {
-		const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
-			resolve();
+	const cancelablePromise = new PCancelable((resolve, reject, cancelHandlerRegistration) => {
+		onCancel = cancelHandlerRegistration;
 
-			setTimeout(() => {
-				try {
-					onCancel();
-				} catch (error) {
-					testResolve(error);
-				}
-			}, 0);
-		});
-
-		await cancelablePromise;
+		resolve();
 	});
 
-	const {message} = await testPromise;
-	t.is(message, errorMessage);
+	await cancelablePromise;
+
+	assert.throws(() => {
+		onCancel();
+	}, {message: 'The `onCancel` handler was attached after the promise resolved.'});
 });
 
-test('`onCancel` handler could not be attached after the promise rejected', async t => {
-	const promiseState = 'rejected';
-	const errorMessage = `The \`onCancel\` handler was attached after the promise ${promiseState}.`;
+test('`onCancel` handler could not be attached after the promise rejected', async () => {
+	let onCancel;
 
-	// eslint-disable-next-line no-async-promise-executor
-	const testPromise = new Promise(async testResolve => {
-		const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
-			reject(new Error('some error'));
+	const cancelablePromise = new PCancelable((resolve, reject, cancelHandlerRegistration) => {
+		onCancel = cancelHandlerRegistration;
 
-			setTimeout(() => {
-				try {
-					onCancel();
-				} catch (error) {
-					testResolve(error);
-				}
-			}, 0);
-		});
-
-		await t.throwsAsync(cancelablePromise, {message: 'some error'});
+		reject(new Error('some error'));
 	});
 
-	const {message} = await testPromise;
-	t.is(message, errorMessage);
+	await assert.rejects(cancelablePromise, {message: 'some error'});
+
+	assert.throws(() => {
+		onCancel();
+	}, {message: 'The `onCancel` handler was attached after the promise rejected.'});
 });
 
-test('`onCancel` handler could not be attached after the promise canceled', async t => {
-	const promiseState = 'canceled';
-	const errorMessage = `The \`onCancel\` handler was attached after the promise ${promiseState}.`;
+test('`onCancel` handler could not be attached after the promise canceled', async () => {
+	let onCancel;
 
-	// eslint-disable-next-line no-async-promise-executor
-	const testPromise = new Promise(async testResolve => {
-		const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
-			onCancel.shouldReject = false;
-
-			setTimeout(() => {
-				try {
-					onCancel();
-				} catch (error) {
-					testResolve(error);
-				}
-			}, 0);
-		});
-
-		cancelablePromise.cancel();
-
-		await cancelablePromise;
+	const cancelablePromise = new PCancelable((resolve, reject, cancelHandlerRegistration) => {
+		onCancel = cancelHandlerRegistration;
 	});
 
-	const {message} = await testPromise;
-	t.is(message, errorMessage);
+	cancelablePromise.cancel();
+
+	await assert.rejects(cancelablePromise, CancelError);
+
+	assert.throws(() => {
+		onCancel();
+	}, {message: 'The `onCancel` handler was attached after the promise canceled.'});
 });
 
-test('supports `finally`', async t => {
+test('supports `finally`', async () => {
 	const cancelablePromise = new PCancelable(async resolve => {
 		await delay(1);
 		resolve();
 	});
 
-	t.plan(1);
+	let isFinallyHandlerCalled = false;
 
-	try {
-		await cancelablePromise;
-	} finally {
-		t.pass();
-	}
+	await cancelablePromise.finally(() => {
+		isFinallyHandlerCalled = true;
+	});
+
+	assert.equal(isFinallyHandlerCalled, true);
 });
 
-test('default message with no reason', async t => {
+test('default message with no reason', async () => {
 	const cancelablePromise = new PCancelable(() => {});
 	cancelablePromise.cancel();
 
-	await t.throwsAsync(cancelablePromise, {message: 'Promise was canceled'});
+	await assert.rejects(cancelablePromise, {message: 'Promise was canceled'});
 });
 
-test('custom reason', async t => {
+test('custom reason', async () => {
 	const cancelablePromise = new PCancelable(() => {});
 	cancelablePromise.cancel('unicorn');
 
-	await t.throwsAsync(cancelablePromise, {message: 'unicorn'});
+	await assert.rejects(cancelablePromise, {message: 'unicorn'});
 });
 
-test('prevent rejection', async t => {
+test('prevent rejection', async () => {
 	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 		onCancel.shouldReject = false;
 		setTimeout(resolve, 100);
 	});
 
 	cancelablePromise.cancel();
-	await t.notThrowsAsync(cancelablePromise);
+	await cancelablePromise;
 	// `cancelablePromise` is canceled before cancelablePromise resolved.
-	t.true(cancelablePromise.isCanceled);
+	assert.ok(cancelablePromise.isCanceled);
 });
 
-test('prevent rejection and reject later', async t => {
+test('prevent rejection and reject later', async () => {
 	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 		onCancel.shouldReject = false;
 		setTimeout(() => reject(new Error('unicorn')), 100);
 	});
 
 	cancelablePromise.cancel();
-	await t.throwsAsync(cancelablePromise, {message: 'unicorn'});
+	await assert.rejects(cancelablePromise, {message: 'unicorn'});
 	// `cancelablePromise` is canceled before cancelablePromise rejected with unicorn Error.
-	t.true(cancelablePromise.isCanceled);
+	assert.ok(cancelablePromise.isCanceled);
 });
 
-test('prevent rejection and resolve later', async t => {
+test('prevent rejection and resolve later', async () => {
 	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 		onCancel.shouldReject = false;
 		setTimeout(() => resolve('unicorn'), 100);
 	});
 
-	t.is(await cancelablePromise, 'unicorn');
+	assert.equal(await cancelablePromise, 'unicorn');
 });
 
-test('`onCancel.shouldReject` is true by default', async t => {
-	await t.notThrows(() => new PCancelable((resolve, reject, onCancel) => {
-		t.true(onCancel.shouldReject);
-	}));
+test('`onCancel.shouldReject` is true by default', () => {
+	let shouldReject;
+
+	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
+		shouldReject = onCancel.shouldReject;
+	});
+
+	assert.equal(shouldReject, true);
+	assert.equal(cancelablePromise.isCanceled, false);
 });
 
-test('throws on cancel when `onCancel.shouldReject` is true', async t => {
+test('throws on cancel when `onCancel.shouldReject` is true', async () => {
 	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 		onCancel.shouldReject = false;
 		onCancel.shouldReject = true;
 	});
+
 	cancelablePromise.cancel();
 
-	await t.throwsAsync(cancelablePromise);
+	await assert.rejects(cancelablePromise, CancelError);
 });
 
-test('throws immediately as soon as .cancel() is called', async t => {
+test('throws immediately as soon as .cancel() is called', async () => {
 	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 		const timeout = setTimeout(() => {
 			resolve(true);
@@ -342,29 +326,27 @@ test('throws immediately as soon as .cancel() is called', async t => {
 
 	cancelablePromise.cancel();
 
-	await t.throwsAsync(cancelablePromise, {
+	await assert.rejects(cancelablePromise, {
 		message: 'Promise was canceled',
 	});
 });
 
-test('does not do anything when the executor threw', async t => {
-	t.plan(3);
-
-	let cancelHandlerRan = false;
+test('does not do anything when the executor threw', async () => {
+	let isCancelHandlerRan = false;
 
 	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
 		onCancel(() => {
-			cancelHandlerRan = true;
+			isCancelHandlerRan = true;
 		});
 
 		throw new Error('unicorn');
 	});
 
-	await t.throwsAsync(cancelablePromise, {message: 'unicorn'});
+	await assert.rejects(cancelablePromise, {message: 'unicorn'});
 
-	t.false(cancelablePromise.isCanceled);
+	assert.equal(cancelablePromise.isCanceled, false);
 
 	cancelablePromise.cancel();
 
-	t.false(cancelHandlerRan);
+	assert.equal(isCancelHandlerRan, false);
 });

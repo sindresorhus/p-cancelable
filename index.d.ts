@@ -15,10 +15,10 @@ Accepts a function that is called when the promise is canceled.
 
 You're not required to call this function. You can call this function multiple times to add multiple cancel handlers.
 */
-export interface OnCancelFunction {
+export type OnCancelFunction = {
 	(cancelHandler: () => void): void;
 	shouldReject: boolean;
-}
+};
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export default class PCancelable<ValueType> extends Promise<ValueType> {
@@ -54,30 +54,30 @@ export default class PCancelable<ValueType> extends Promise<ValueType> {
 	static fn<Agument1Type, ReturnType>(
 		userFn: (
 			argument1: Agument1Type,
-			onCancel: OnCancelFunction
+			onCancel: OnCancelFunction,
 		) => PromiseLike<ReturnType>
 	): (argument1: Agument1Type) => PCancelable<ReturnType>;
 	static fn<Agument1Type, Agument2Type, ReturnType>(
 		userFn: (
 			argument1: Agument1Type,
 			argument2: Agument2Type,
-			onCancel: OnCancelFunction
+			onCancel: OnCancelFunction,
 		) => PromiseLike<ReturnType>
 	): (
 		argument1: Agument1Type,
-		argument2: Agument2Type
+		argument2: Agument2Type,
 	) => PCancelable<ReturnType>;
 	static fn<Agument1Type, Agument2Type, Agument3Type, ReturnType>(
 		userFn: (
 			argument1: Agument1Type,
 			argument2: Agument2Type,
 			argument3: Agument3Type,
-			onCancel: OnCancelFunction
+			onCancel: OnCancelFunction,
 		) => PromiseLike<ReturnType>
 	): (
 		argument1: Agument1Type,
 		argument2: Agument2Type,
-		argument3: Agument3Type
+		argument3: Agument3Type,
 	) => PCancelable<ReturnType>;
 	static fn<Agument1Type, Agument2Type, Agument3Type, Agument4Type, ReturnType>(
 		userFn: (
@@ -85,13 +85,13 @@ export default class PCancelable<ValueType> extends Promise<ValueType> {
 			argument2: Agument2Type,
 			argument3: Agument3Type,
 			argument4: Agument4Type,
-			onCancel: OnCancelFunction
+			onCancel: OnCancelFunction,
 		) => PromiseLike<ReturnType>
 	): (
 		argument1: Agument1Type,
 		argument2: Agument2Type,
 		argument3: Agument3Type,
-		argument4: Agument4Type
+		argument4: Agument4Type,
 	) => PCancelable<ReturnType>;
 	static fn<
 		Agument1Type,
@@ -107,14 +107,14 @@ export default class PCancelable<ValueType> extends Promise<ValueType> {
 			argument3: Agument3Type,
 			argument4: Agument4Type,
 			argument5: Agument5Type,
-			onCancel: OnCancelFunction
+			onCancel: OnCancelFunction,
 		) => PromiseLike<ReturnType>
 	): (
 		argument1: Agument1Type,
 		argument2: Agument2Type,
 		argument3: Agument3Type,
 		argument4: Agument4Type,
-		argument5: Agument5Type
+		argument5: Agument5Type,
 	) => PCancelable<ReturnType>;
 	static fn<ReturnType>(
 		userFn: (...arguments: unknown[]) => PromiseLike<ReturnType>
@@ -163,7 +163,7 @@ export default class PCancelable<ValueType> extends Promise<ValueType> {
 		executor: (
 			resolve: (value?: ValueType | PromiseLike<ValueType>) => void,
 			reject: (reason?: unknown) => void,
-			onCancel: OnCancelFunction
+			onCancel: OnCancelFunction,
 		) => void
 	);
 }

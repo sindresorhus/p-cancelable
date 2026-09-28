@@ -1,7 +1,8 @@
-import {expectType} from 'tsd';
-import PCancelable, {OnCancelFunction, CancelError} from './index.js';
+/* eslint-disable unicorn/consistent-boolean-name -- `parameter2` is a positional argument name, not a predicate. */
+import {expectTypeOf} from 'nz';
+import PCancelable, {type OnCancelFunction, CancelError} from './index.js';
 
-const cancelablePromise: PCancelable<number> = new PCancelable(
+const cancelablePromise = new PCancelable<number>(
 	(resolve, reject, onCancel) => {
 		resolve(1);
 		resolve(Promise.resolve(1));
@@ -9,34 +10,36 @@ const cancelablePromise: PCancelable<number> = new PCancelable(
 		reject();
 		reject('foo');
 
-		expectType<OnCancelFunction>(onCancel);
-		onCancel(() => 'foo');
+		expectTypeOf(onCancel).toBe<OnCancelFunction>();
+		onCancel(() => {
+			expectTypeOf(onCancel).toBe<OnCancelFunction>();
+		});
 		onCancel.shouldReject = false;
 	},
 );
 
 cancelablePromise.cancel();
 cancelablePromise.cancel('foo');
-expectType<boolean>(cancelablePromise.isCanceled);
+expectTypeOf(cancelablePromise.isCanceled).toBe<boolean>();
 
 const function0 = PCancelable.fn(async onCancel => {
-	expectType<OnCancelFunction>(onCancel);
+	expectTypeOf(onCancel).toBe<OnCancelFunction>();
 
 	return 10;
 });
-expectType<() => PCancelable<number>>(function0);
+expectTypeOf(function0).toBe<() => PCancelable<number>>();
 
 const function1 = PCancelable.fn(
 	async (_parameter1: string, _onCancel: OnCancelFunction) => 10,
 );
-expectType<(parameter1: string) => PCancelable<number>>(function1);
+expectTypeOf(function1).toBe<(parameter1: string) => PCancelable<number>>();
 
 const function2 = PCancelable.fn(
 	async (_parameter1: string, _parameter2: boolean, _onCancel: OnCancelFunction) => 10,
 );
-expectType<(_parameter1: string, _parameter2: boolean) => PCancelable<number>>(
+expectTypeOf(
 	function2,
-);
+).toBe<(_parameter1: string, _parameter2: boolean) => PCancelable<number>>();
 
 const function3 = PCancelable.fn(
 	async (
@@ -46,13 +49,12 @@ const function3 = PCancelable.fn(
 		_onCancel: OnCancelFunction,
 	) => 10,
 );
-expectType<
-(
-parameter1: string,
-parameter2: boolean,
-parameter3: number
-) => PCancelable<number>
->(function3);
+expectTypeOf(function3).toBe<
+	(
+		parameter1: string,
+		parameter2: boolean,
+		parameter3: number,
+	) => PCancelable<number>>();
 
 const function4 = PCancelable.fn(
 	async (
@@ -63,14 +65,13 @@ const function4 = PCancelable.fn(
 		_onCancel: OnCancelFunction,
 	) => 10,
 );
-expectType<
-(
-parameter1: string,
-parameter2: boolean,
-parameter3: number,
-parameter4: symbol
-) => PCancelable<number>
->(function4);
+expectTypeOf(function4).toBe<
+	(
+		parameter1: string,
+		parameter2: boolean,
+		parameter3: number,
+		parameter4: symbol,
+	) => PCancelable<number>>();
 
 const function5 = PCancelable.fn(
 	async (
@@ -78,23 +79,22 @@ const function5 = PCancelable.fn(
 		_parameter2: boolean,
 		_parameter3: number,
 		_parameter4: symbol,
-		_parameter5: null, // eslint-disable-line @typescript-eslint/ban-types
+		_parameter5: undefined,
 		_onCancel: OnCancelFunction,
 	) => 10,
 );
-expectType<
-(
-parameter1: string,
-parameter2: boolean,
-parameter3: number,
-parameter4: symbol,
-parameter5: null // eslint-disable-line @typescript-eslint/ban-types
-) => PCancelable<number>
->(function5);
+expectTypeOf(function5).toBe<
+	(
+		parameter1: string,
+		parameter2: boolean,
+		parameter3: number,
+		parameter4: symbol,
+		parameter5: undefined,
+	) => PCancelable<number>>();
 
 const cancelError = new CancelError();
 new CancelError('foo'); // eslint-disable-line no-new
 
-expectType<CancelError>(cancelError);
-expectType<'CancelError'>(cancelError.name);
-expectType<true>(cancelError.isCanceled);
+expectTypeOf(cancelError).toBe<CancelError>();
+expectTypeOf(cancelError.name).toBe<'CancelError'>();
+expectTypeOf(cancelError.isCanceled).toBe<true>();

@@ -5,20 +5,18 @@
 	"license": "MIT",
 	"repository": "sindresorhus/p-cancelable",
 	"funding": "https://github.com/sponsors/sindresorhus",
-	"author": {
-		"name": "Sindre Sorhus",
-		"email": "sindresorhus@gmail.com",
-		"url": "https://sindresorhus.com"
-	},
+	"author": "Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)",
 	"type": "module",
-	"exports": "./index.js",
-	"types": "./index.d.ts",
+	"exports": {
+		"types": "./index.d.ts",
+		"default": "./index.js"
+	},
 	"sideEffects": false,
 	"engines": {
-		"node": ">=14.16"
+		"node": ">=22"
 	},
 	"scripts": {
-		"test": "xo && ava && tsd"
+		"test": "xo && node --test && nz"
 	},
 	"files": [
 		"index.js",
@@ -45,9 +43,9 @@
 		"bluebird"
 	],
 	"devDependencies": {
-		"ava": "^4.2.0",
-		"delay": "^5.0.0",
-		"tsd": "^0.20.0",
-		"xo": "^0.48.0"
+		"@typescript/native": "npm:typescript@^7.0.2",
+		"delay": "^7.0.0",
+		"nz": "^0.1.0",
+		"xo": "^5.0.1"
 	}
 }

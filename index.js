@@ -20,6 +20,9 @@ export default class PCancelable {
 	static fn(userFunction) {
 		return (...arguments_) => new PCancelable((resolve, reject, onCancel) => {
 			arguments_.push(onCancel);
+			// Not `.then(…).catch(…)`: `resolve` and `reject` are this package's own wrappers, which
+			// check the cancel state. A `.catch(…)` would also catch a `resolve` that threw.
+			// eslint-disable-next-line unicorn/prefer-then-catch
 			userFunction(...arguments_).then(resolve, reject);
 		});
 	}
@@ -35,17 +38,21 @@ export default class PCancelable {
 			this.#reject = reject;
 
 			const onResolve = value => {
-				if (this.#state !== promiseState.canceled || !onCancel.shouldReject) {
-					resolve(value);
-					this.#setState(promiseState.resolved);
+				if (this.#state === promiseState.canceled && onCancel.shouldReject) {
+					return;
 				}
+
+				resolve(value);
+				this.#setState(promiseState.resolved);
 			};
 
 			const onReject = error => {
-				if (this.#state !== promiseState.canceled || !onCancel.shouldReject) {
-					reject(error);
-					this.#setState(promiseState.rejected);
+				if (this.#state === promiseState.canceled && onCancel.shouldReject) {
+					return;
 				}
+
+				reject(error);
+				this.#setState(promiseState.rejected);
 			};
 
 			const onCancel = handler => {
@@ -76,10 +83,17 @@ export default class PCancelable {
 		});
 	}
 
-	// eslint-disable-next-line unicorn/no-thenable
+	#setState(state) {
+		if (this.#state === promiseState.pending) {
+			this.#state = state;
+		}
+	}
+
+	/* eslint-disable unicorn/no-thenable, unicorn/prefer-then-catch -- `PCancelable` is documented as a `Promise` subclass, so it has to forward the two-argument `Promise#then` contract. */
 	then(onFulfilled, onRejected) {
 		return this.#promise.then(onFulfilled, onRejected);
 	}
+	/* eslint-enable unicorn/no-thenable, unicorn/prefer-then-catch */
 
 	catch(onRejected) {
 		return this.#promise.catch(onRejected);
@@ -115,12 +129,8 @@ export default class PCancelable {
 	get isCanceled() {
 		return this.#state === promiseState.canceled;
 	}
-
-	#setState(state) {
-		if (this.#state === promiseState.pending) {
-			this.#state = state;
-		}
-	}
 }
 
+// `PCancelable` is documented as a `Promise` subclass, so it must inherit from `Promise.prototype`.
+// eslint-disable-next-line unicorn/no-top-level-side-effects
 Object.setPrototypeOf(PCancelable.prototype, Promise.prototype);
