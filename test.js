@@ -346,3 +346,25 @@ test('throws immediately as soon as .cancel() is called', async t => {
 		message: 'Promise was canceled',
 	});
 });
+
+test('does not do anything when the executor threw', async t => {
+	t.plan(3);
+
+	let cancelHandlerRan = false;
+
+	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
+		onCancel(() => {
+			cancelHandlerRan = true;
+		});
+
+		throw new Error('unicorn');
+	});
+
+	await t.throwsAsync(cancelablePromise, {message: 'unicorn'});
+
+	t.false(cancelablePromise.isCanceled);
+
+	cancelablePromise.cancel();
+
+	t.false(cancelHandlerRan);
+});

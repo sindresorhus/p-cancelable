@@ -65,7 +65,14 @@ export default class PCancelable {
 				},
 			});
 
-			executor(onResolve, onReject, onCancel);
+			try {
+				executor(onResolve, onReject, onCancel);
+			} catch (error) {
+				// The `Promise` constructor rejects with this, so mirror what `onReject` does and
+				// leave the promise settled. Otherwise `cancel()` still sees it as pending.
+				this.#setState(promiseState.rejected);
+				throw error;
+			}
 		});
 	}
 
