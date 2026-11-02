@@ -22,8 +22,9 @@ export type OnCancelFunction = {
 	shouldReject: boolean;
 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export default class PCancelable<ValueType> extends Promise<ValueType> {
+// Not `extends Promise`: that would also inherit the static methods, like `Promise.all`, which `PCancelable` does not have at runtime. The interface below adds the instance methods.
+// eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unsafe-declaration-merging -- See the comment above.
+export default class PCancelable<ValueType> {
 	/**
 	Convenience method to make your promise-returning or async function cancelable.
 
@@ -169,3 +170,6 @@ export default class PCancelable<ValueType> extends Promise<ValueType> {
 		) => void
 	);
 }
+
+// eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-empty-object-type -- Only an interface can merge with the class.
+export default interface PCancelable<ValueType> extends Promise<ValueType> {}

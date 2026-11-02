@@ -1,5 +1,5 @@
 /* eslint-disable unicorn/consistent-boolean-name -- `parameter2` is a positional argument name, not a predicate. */
-import {expectTypeOf} from 'nz';
+import {expectTypeOf, expectError} from 'nz';
 import PCancelable, {type OnCancelFunction, CancelError} from './index.js';
 
 const cancelablePromise = new PCancelable<number>(
@@ -98,3 +98,10 @@ new CancelError('foo'); // eslint-disable-line no-new
 expectTypeOf(cancelError).toBe<CancelError>();
 expectTypeOf(cancelError.name).toBe<'CancelError'>();
 expectTypeOf(cancelError.isCanceled).toBe<true>();
+
+// The static `Promise` methods are not available at runtime.
+expectError(PCancelable.resolve(1));
+expectError(PCancelable.all([cancelablePromise]));
+
+expectTypeOf(cancelablePromise).toBeAssignableTo<Promise<number>>();
+expectTypeOf(await cancelablePromise).toBe<number>();
