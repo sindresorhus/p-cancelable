@@ -83,6 +83,8 @@ Accepts a function that is called when the promise is canceled.
 
 You're not required to call this function. You can call this function multiple times to add multiple cancel handlers.
 
+If a cancel handler throws, the other handlers still run, and the promise is rejected with the first error.
+
 ### PCancelable#cancel(reason?)
 
 Type: `Function`

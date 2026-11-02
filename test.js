@@ -171,6 +171,24 @@ test('supports multiple `onCancel` handlers', async () => {
 	assert.equal(cancelHandlerCalls, 3);
 });
 
+test('runs all `onCancel` handlers when one throws', async () => {
+	let isSecondHandlerRan = false;
+
+	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
+		onCancel(() => {
+			throw new Error('unicorn');
+		});
+		onCancel(() => {
+			isSecondHandlerRan = true;
+		});
+	});
+
+	cancelablePromise.cancel();
+
+	assert.equal(isSecondHandlerRan, true);
+	await assert.rejects(cancelablePromise, {message: 'unicorn'});
+});
+
 test('cancel error includes a `isCanceled` property', async () => {
 	const cancelablePromise = new PCancelable(() => {});
 	cancelablePromise.cancel();

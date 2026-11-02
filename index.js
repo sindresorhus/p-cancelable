@@ -128,15 +128,20 @@ export default class PCancelable {
 
 		this.#setState(promiseState.canceled);
 
-		if (this.#cancelHandlers.length > 0) {
+		// Run every handler even if one throws, so the cleanup in the other handlers still happens. Reject with the first error.
+		const errors = [];
+
+		for (const handler of this.#cancelHandlers) {
 			try {
-				for (const handler of this.#cancelHandlers) {
-					handler();
-				}
+				handler();
 			} catch (error) {
-				this.#reject(error);
-				return;
+				errors.push(error);
 			}
+		}
+
+		if (errors.length > 0) {
+			this.#reject(errors[0]);
+			return;
 		}
 
 		if (this.#rejectOnCancel) {
