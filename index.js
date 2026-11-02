@@ -37,22 +37,42 @@ export default class PCancelable {
 		this.#promise = new Promise((resolve, reject) => {
 			this.#reject = reject;
 
-			const onResolve = value => {
+			let isAdopting = false;
+
+			const settle = (settlePromise, state, value) => {
 				if (this.#state === promiseState.canceled && onCancel.shouldReject) {
 					return;
 				}
 
-				resolve(value);
-				this.#setState(promiseState.resolved);
+				settlePromise(value);
+				this.#setState(state);
+			};
+
+			const onResolve = value => {
+				if (isAdopting) {
+					return;
+				}
+
+				// Adopt thenables manually instead of passing them to the native `resolve`, which would lock in the outcome right away. This keeps the promise pending, and cancelable, until the thenable settles.
+				if (typeof value?.then === 'function') {
+					isAdopting = true;
+					// eslint-disable-next-line unicorn/prefer-then-catch
+					Promise.resolve(value).then(
+						adoptedValue => settle(resolve, promiseState.resolved, adoptedValue),
+						error => settle(reject, promiseState.rejected, error),
+					);
+					return;
+				}
+
+				settle(resolve, promiseState.resolved, value);
 			};
 
 			const onReject = error => {
-				if (this.#state === promiseState.canceled && onCancel.shouldReject) {
+				if (isAdopting) {
 					return;
 				}
 
-				reject(error);
-				this.#setState(promiseState.rejected);
+				settle(reject, promiseState.rejected, error);
 			};
 
 			const onCancel = handler => {
@@ -75,10 +95,8 @@ export default class PCancelable {
 			try {
 				executor(onResolve, onReject, onCancel);
 			} catch (error) {
-				// The `Promise` constructor rejects with this, so mirror what `onReject` does and
-				// leave the promise settled. Otherwise `cancel()` still sees it as pending.
-				this.#setState(promiseState.rejected);
-				throw error;
+				// Reject through `onReject`, the same as the `Promise` constructor rejects with this, so the promise is left settled. Otherwise `cancel()` still sees it as pending. This also ignores the error after `resolve(thenable)`, like the `Promise` constructor does.
+				onReject(error);
 			}
 		});
 	}

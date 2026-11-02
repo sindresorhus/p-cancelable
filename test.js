@@ -350,3 +350,72 @@ test('does not do anything when the executor threw', async () => {
 
 	assert.equal(isCancelHandlerRan, false);
 });
+
+test('can be canceled while an adopted promise is pending', async () => {
+	let isCancelHandlerRan = false;
+
+	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
+		onCancel(() => {
+			isCancelHandlerRan = true;
+		});
+
+		resolve(delay(30, {value: fixture}));
+	});
+
+	cancelablePromise.cancel('unicorn');
+
+	assert.equal(cancelablePromise.isCanceled, true);
+	assert.equal(isCancelHandlerRan, true);
+	await assert.rejects(cancelablePromise, {name: 'CancelError', message: 'unicorn'});
+});
+
+test('ignores `resolve` and `reject` calls after resolving with a promise', async () => {
+	const cancelablePromise = new PCancelable((resolve, reject) => {
+		resolve(delay(30, {value: fixture}));
+		resolve('unicorn');
+		reject(new Error('unicorn'));
+	});
+
+	assert.equal(await cancelablePromise, fixture);
+	assert.equal(cancelablePromise.isCanceled, false);
+});
+
+test('ignores an executor error after resolving with a promise', async () => {
+	const cancelablePromise = new PCancelable(resolve => {
+		resolve(delay(30, {value: fixture}));
+		throw new Error('unicorn');
+	});
+
+	assert.equal(await cancelablePromise, fixture);
+});
+
+test('prevent rejection and settle with the adopted promise', async () => {
+	let isCancelHandlerRan = false;
+
+	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
+		onCancel.shouldReject = false;
+		onCancel(() => {
+			isCancelHandlerRan = true;
+		});
+
+		resolve(delay(30, {value: fixture}));
+	});
+
+	cancelablePromise.cancel();
+
+	assert.equal(cancelablePromise.isCanceled, true);
+	assert.equal(isCancelHandlerRan, true);
+	assert.equal(await cancelablePromise, fixture);
+});
+
+test('rejects with the adopted promise rejection', async () => {
+	const cancelablePromise = new PCancelable(resolve => {
+		resolve(Promise.reject(new Error('unicorn')));
+	});
+
+	await assert.rejects(cancelablePromise, {message: 'unicorn'});
+
+	cancelablePromise.cancel();
+
+	assert.equal(cancelablePromise.isCanceled, false);
+});
