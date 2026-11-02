@@ -53,18 +53,22 @@ export default class PCancelable {
 					return;
 				}
 
-				// Adopt thenables manually instead of passing them to the native `resolve`, which would lock in the outcome right away. This keeps the promise pending, and cancelable, until the thenable settles.
-				if (typeof value?.then === 'function') {
-					isAdopting = true;
-					// eslint-disable-next-line unicorn/prefer-then-catch
-					Promise.resolve(value).then(
-						adoptedValue => settle(resolve, promiseState.resolved, adoptedValue),
-						error => settle(reject, promiseState.rejected, error),
-					);
-					return;
-				}
+				try {
+					// Adopt thenables manually instead of passing them to the native `resolve`, which would lock in the outcome right away. This keeps the promise pending, and cancelable, until the thenable settles.
+					if (typeof value?.then === 'function') {
+						isAdopting = true;
+						// eslint-disable-next-line unicorn/prefer-then-catch
+						Promise.resolve(value).then(
+							adoptedValue => settle(resolve, promiseState.resolved, adoptedValue),
+							error => settle(reject, promiseState.rejected, error),
+						);
+						return;
+					}
 
-				settle(resolve, promiseState.resolved, value);
+					settle(resolve, promiseState.resolved, value);
+				} catch (error) {
+					settle(reject, promiseState.rejected, error);
+				}
 			};
 
 			const onReject = error => {
@@ -129,19 +133,12 @@ export default class PCancelable {
 		this.#setState(promiseState.canceled);
 
 		// Run every handler even if one throws, so the cleanup in the other handlers still happens. Reject with the first error.
-		const errors = [];
-
 		for (const handler of this.#cancelHandlers) {
 			try {
 				handler();
 			} catch (error) {
-				errors.push(error);
+				this.#reject(error);
 			}
-		}
-
-		if (errors.length > 0) {
-			this.#reject(errors[0]);
-			return;
 		}
 
 		if (this.#rejectOnCancel) {

@@ -189,6 +189,28 @@ test('runs all `onCancel` handlers when one throws', async () => {
 	await assert.rejects(cancelablePromise, {message: 'unicorn'});
 });
 
+test('preserves the first cancel handler error when a later handler resolves', async () => {
+	const error = new Error('first error');
+	let isSecondHandlerRan = false;
+
+	const cancelablePromise = new PCancelable((resolve, reject, onCancel) => {
+		onCancel.shouldReject = false;
+		onCancel(() => {
+			throw error;
+		});
+		onCancel(() => {
+			isSecondHandlerRan = true;
+			resolve(fixture);
+			throw new Error('second error');
+		});
+	});
+
+	cancelablePromise.cancel();
+
+	assert.equal(isSecondHandlerRan, true);
+	await assert.rejects(cancelablePromise, rejection => rejection === error);
+});
+
 test('cancel error includes a `isCanceled` property', async () => {
 	const cancelablePromise = new PCancelable(() => {});
 	cancelablePromise.cancel();
@@ -367,6 +389,28 @@ test('does not do anything when the executor threw', async () => {
 	cancelablePromise.cancel();
 
 	assert.equal(isCancelHandlerRan, false);
+});
+
+test('rejects when resolving after construction with a throwing `then` getter', async () => {
+	const error = new Error('unicorn');
+	let resolve;
+
+	const cancelablePromise = new PCancelable(resolver => {
+		resolve = resolver;
+	});
+
+	resolve({
+		// eslint-disable-next-line unicorn/no-thenable -- Exercise a throwing thenable accessor.
+		get then() {
+			throw error;
+		},
+	});
+
+	await assert.rejects(cancelablePromise, rejection => rejection === error);
+
+	cancelablePromise.cancel();
+
+	assert.equal(cancelablePromise.isCanceled, false);
 });
 
 test('can be canceled while an adopted promise is pending', async () => {
